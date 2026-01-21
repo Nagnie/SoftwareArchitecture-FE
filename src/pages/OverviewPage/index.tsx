@@ -1,3 +1,9 @@
+import { Header } from '@/components/Header';
+
 export const OverviewPage = () => {
-  return <div>OverviewPage</div>;
+  return (
+    <div>
+      <Header />
+    </div>
+  );
 };
