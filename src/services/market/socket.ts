@@ -1,13 +1,25 @@
 import { io, Socket } from 'socket.io-client';
 
 import { envConfig } from '@/config/envConfig';
-import type { AllTickersCallback, AllTickersUpdateData } from '@/services/market/type';
+import type {
+  AllTickersCallback,
+  AllTickersUpdateData,
+  CandleCallback,
+  CandleUpdateData,
+  HistoricalDataCallback,
+  TickerCallback,
+  TickerUpdateData
+} from '@/services/market/type';
 
 class WebSocketService {
   private socket: Socket | null = null;
   private reconnectAttempts: number = 0;
   private maxReconnectAttempts: number = 5;
   private reconnectDelay: number = 1000;
+  private candleUpdateHandler: ((data: CandleUpdateData) => void) | null = null;
+  private tickerUpdateHandler: ((data: TickerUpdateData) => void) | null = null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private historicalDataHandler: ((data: any) => void) | null = null;
 
   constructor() {
     this.reconnectAttempts = envConfig.MARKET_WS_RECONNECT_ATTEMPTS;
@@ -79,6 +91,78 @@ class WebSocketService {
 
   unsubscribeFromAllTickers(): void {
     this.socket?.off('all-tickers-update');
+  }
+
+  subscribeToSymbol(
+    symbol: string,
+    interval: string,
+    onCandleUpdate: CandleCallback,
+    onTickerUpdate?: TickerCallback,
+    onHistoricalData?: HistoricalDataCallback
+  ): void {
+    if (!this.socket) {
+      this.connect();
+    }
+
+    // Remove old listeners first để tránh duplicate
+    this.removeAllUpdateListeners();
+
+    // Emit subscribe event
+    this.socket?.emit('subscribe', { symbol, interval });
+
+    // Create and store candle update handler với filter cả symbol VÀ interval
+    this.candleUpdateHandler = (data: CandleUpdateData) => {
+      if (data.symbol === symbol && data.interval === interval) {
+        onCandleUpdate(data.data);
+      }
+    };
+    this.socket?.on('candle-update', this.candleUpdateHandler);
+
+    // Create and store ticker update handler
+    if (onTickerUpdate) {
+      this.tickerUpdateHandler = (data: TickerUpdateData) => {
+        if (data.symbol === symbol) {
+          onTickerUpdate(data.data);
+        }
+      };
+      this.socket?.on('ticker-update', this.tickerUpdateHandler);
+    }
+
+    // Create and store historical data handler
+    if (onHistoricalData) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      this.historicalDataHandler = (data: any) => {
+        console.log('Received historical data:', data);
+        if (data.symbol === symbol && data.interval === interval && data.data && Array.isArray(data.data)) {
+          onHistoricalData(data.data);
+        } else {
+          console.warn('Historical data is empty or invalid, will use HTTP fallback');
+        }
+      };
+      this.socket?.on('historical-data', this.historicalDataHandler);
+    }
+  }
+
+  unsubscribeFromSymbol(symbol: string, interval?: string): void {
+    this.socket?.emit('unsubscribe', { symbol, interval });
+
+    // Remove stored listeners
+    this.removeAllUpdateListeners();
+  }
+
+  private removeAllUpdateListeners(): void {
+    if (this.candleUpdateHandler) {
+      this.socket?.off('candle-update', this.candleUpdateHandler);
+      this.candleUpdateHandler = null;
+    }
+    if (this.tickerUpdateHandler) {
+      this.socket?.off('ticker-update', this.tickerUpdateHandler);
+      this.tickerUpdateHandler = null;
+    }
+    if (this.historicalDataHandler) {
+      this.socket?.off('historical-data', this.historicalDataHandler);
+      this.historicalDataHandler = null;
+    }
   }
 
   disconnect(): void {

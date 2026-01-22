@@ -24,3 +24,11 @@ export function formatCompact(val: string | number) {
   const num = typeof val === 'string' ? parseFloat(val) : val;
   return new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 2 }).format(num);
 }
+
+export function formatCompactNumber(value: number | string) {
+  const num = typeof value === 'string' ? parseFloat(value) : value;
+  return Intl.NumberFormat('en-US', {
+    notation: 'compact',
+    maximumFractionDigits: 2
+  }).format(num);
+}
