@@ -20,6 +20,8 @@ class WebSocketService {
       return this.socket;
     }
 
+    console.log('>>> establishing WebSocket connection to', envConfig.MARKET_WS_URL);
+
     this.socket = io(envConfig.MARKET_WS_URL, {
       transports: ['websocket', 'polling'],
       reconnection: true,

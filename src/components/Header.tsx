@@ -14,10 +14,16 @@ import {
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { useShortcut } from '@/hooks/useShortcut';
 import { Search } from 'lucide-react';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 
-export const Header = () => {
+interface HeaderProps {
+  onUpdateSearch?: (query: string) => void;
+}
+
+export const Header = ({ onUpdateSearch }: HeaderProps) => {
+  const [search, setSearch] = useState('');
+
   const navigate = useNavigate();
 
   const isLoggedIn = true; // Giả sử trạng thái đăng nhập được xác định ở đây
@@ -46,6 +52,12 @@ export const Header = () => {
 
   const handleProfile = () => {
     navigate('/profile');
+  };
+
+  const handleEnterPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && onUpdateSearch) {
+      onUpdateSearch(search);
+    }
   };
 
   return (
@@ -78,22 +90,20 @@ export const Header = () => {
           >
             Markets
           </NavLink>
-          <NavLink
-            to='/markets/news'
-            className={({ isActive }) =>
-              isActive
-                ? buttonVariants({ variant: 'secondary', className: 'hover:bg-secondary!' })
-                : buttonVariants({ variant: 'ghost' })
-            }
-          >
-            News
-          </NavLink>
         </nav>
       </div>
       {/* Search */}
       <div className='flex max-w-xl flex-1 justify-center'>
         <InputGroup className='w-full'>
-          <InputGroupInput placeholder='Search...' ref={searchRef} />
+          <InputGroupInput
+            placeholder='Search...'
+            ref={searchRef}
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+            }}
+            onKeyDown={handleEnterPress}
+          />
           <InputGroupAddon>
             <Search />
           </InputGroupAddon>

@@ -11,8 +11,8 @@ export const getIconUrl = (symbol: string): string => {
   return `${BASE_URL}/icon/${symbol}`;
 };
 
-export const getAllTickers = async () => {
-  const response = await axios.get<MarketServiceApiResponse<TickerData[]>>('/tickers');
+export const getAllTickers = async (signal?: AbortSignal) => {
+  const response = await axios.get<MarketServiceApiResponse<TickerData[]>>('/tickers', { signal });
 
   return response.data.data || [];
 };
