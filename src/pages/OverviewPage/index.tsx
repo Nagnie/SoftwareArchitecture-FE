@@ -1,4 +1,4 @@
-import { Header } from '@/components/Header';
+import { Header } from '@/pages/OverviewPage/components/Header';
 import {
   Pagination,
   PaginationContent,
@@ -16,6 +16,7 @@ import { websocketService } from '@/services/market/socket';
 import { usePagination } from '@/hooks/usePagination';
 import { ArrowUpDown, Search, TrendingDown, TrendingUp, Zap } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 type MarketFilter = 'all' | 'gainers' | 'volume';
 
@@ -54,6 +55,8 @@ const PriceCell = ({ price }: { price: string }) => {
 };
 
 export const OverviewPage = () => {
+  const navigate = useNavigate();
+
   const [tickers, setTickers] = useState<TickerData[]>([]);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<MarketFilter>('all');
@@ -61,7 +64,10 @@ export const OverviewPage = () => {
   const [sortConfig, setSortConfig] = useState<{
     key: keyof TickerData;
     direction: 'asc' | 'desc';
-  } | null>(null);
+  } | null>({
+    key: 'lastPrice',
+    direction: 'desc'
+  });
   const itemsPerPage = 5;
 
   useEffect(() => {
@@ -160,6 +166,8 @@ export const OverviewPage = () => {
     // Khi click vào item trong dropdown, scroll đến item đó hoặc hiển thị chi tiết
     setSearch(ticker.symbol);
     setCurrentPage(1);
+
+    navigate(`/markets/price-chart/${ticker.baseAsset}/${ticker.symbol}`);
   };
 
   return (
@@ -264,7 +272,11 @@ export const OverviewPage = () => {
                     const isPositive = parseFloat(ticker.priceChangePercent) >= 0;
 
                     return (
-                      <TableRow className='cursor-pointer' key={ticker.symbol}>
+                      <TableRow
+                        className='cursor-pointer'
+                        key={ticker.symbol}
+                        onClick={() => handleTickerSelect(ticker)}
+                      >
                         <TableCell>
                           <div className='group flex items-center gap-4'>
                             <div className='relative'>

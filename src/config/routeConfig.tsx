@@ -3,6 +3,7 @@ import { OverviewPage } from '../pages/OverviewPage';
 import LoginPage from '@/pages/LoginPage';
 import SignupPage from '@/pages/SignupPage';
 import ProfilePage from '@/pages/ProfilePage';
+import { PriceChartPage } from '@/pages/PriceChartPage';
 
 export const routeConfig: RouteObject[] = [
   // Public Routes
@@ -33,6 +34,10 @@ export const routeConfig: RouteObject[] = [
       {
         path: 'overview',
         element: <OverviewPage />
+      },
+      {
+        path: 'price-chart/:baseAsset/:tickerSymbol',
+        element: <PriceChartPage />
       }
     ]
   },

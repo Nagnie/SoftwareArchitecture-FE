@@ -1,5 +1,5 @@
 import { ModeToggle } from '@/components/ModeToggle';
-import { MarketSearchBar } from '@/components/MarketSearchBar';
+import { MarketSearchBar } from '@/pages/OverviewPage/components/MarketSearchBar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { buttonVariants } from '@/components/ui/button';
 import {

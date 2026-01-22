@@ -1,19 +1,26 @@
 <!doctype html>
+
 <html class="dark" lang="en">
   <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Market Overview Dashboard</title>
+    <title>Trading Chart &amp; AI Insights</title>
+    <!-- Fonts -->
     <link href="https://fonts.googleapis.com" rel="preconnect" />
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap"
       rel="stylesheet"
     />
     <link
       href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
       rel="stylesheet"
     />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script id="tailwind-config">
       tailwind.config = {
@@ -24,9 +31,10 @@
               primary: '#258cf4',
               'background-light': '#f5f7f8',
               'background-dark': '#101922',
-              'surface-dark': '#1e2832', // Slightly lighter for cards/sidebar
-              'accent-green': '#10b981',
-              'accent-red': '#ef4444'
+              'card-dark': '#1c232e',
+              'border-dark': '#2a313c',
+              bull: '#26a69a',
+              bear: '#ef5350'
             },
             fontFamily: {
               display: ['Inter', 'sans-serif']
@@ -37,627 +45,406 @@
       };
     </script>
     <style>
+      /* Custom scrollbar for webkit */
       ::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
+        width: 6px;
+        height: 6px;
       }
       ::-webkit-scrollbar-track {
         background: #101922;
       }
       ::-webkit-scrollbar-thumb {
-        background: #2d3b4e;
-        border-radius: 4px;
+        background: #2a313c;
+        border-radius: 3px;
       }
       ::-webkit-scrollbar-thumb:hover {
-        background: #3b4e66;
+        background: #3b4754;
+      }
+
+      .chart-grid {
+        background-image:
+          linear-gradient(#2a313c 1px, transparent 1px), linear-gradient(90deg, #2a313c 1px, transparent 1px);
+        background-size: 40px 40px;
+        background-position: -1px -1px;
       }
     </style>
   </head>
   <body
-    class="bg-background-light dark:bg-background-dark font-display flex h-screen flex-col overflow-hidden text-slate-900 dark:text-white"
+    class="bg-background-light dark:bg-background-dark font-display flex h-screen flex-col overflow-hidden text-slate-900 dark:text-slate-100"
   >
+    <!-- Top Navigation Bar -->
     <header
-      class="dark:bg-surface-dark z-30 flex h-16 shrink-0 items-center justify-between gap-4 border-b border-slate-200 bg-white px-6 transition-colors duration-300 dark:border-slate-800"
+      class="dark:border-border-dark z-20 flex h-14 shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 dark:bg-[#111418]"
     >
-      <div class="flex shrink-0 items-center gap-8">
-        <div class="flex items-center gap-3">
-          <div
-            class="from-primary shadow-primary/20 flex size-9 items-center justify-center rounded-xl bg-gradient-to-br to-blue-600 text-white shadow-lg"
-          >
-            <span class="material-symbols-outlined text-xl">token</span>
-          </div>
-          <div>
-            <h1 class="text-lg leading-none font-bold tracking-tight text-slate-900 dark:text-white">CryptoAI</h1>
-            <span class="text-[10px] font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400"
-              >Pro Terminal</span
-            >
-          </div>
+      <!-- Left: Logo & Symbol Switcher -->
+      <div class="flex items-center gap-6">
+        <div class="text-primary flex items-center gap-2 text-lg font-bold tracking-tight">
+          <span class="material-symbols-outlined text-3xl">candlestick_chart</span>
+          <span>TradeAI</span>
         </div>
-        <nav class="hidden items-center gap-1 xl:flex">
-          <a
-            class="hover:text-primary flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800"
-            href="#"
-          >
-            Dashboard
-          </a>
-          <a
-            class="bg-primary/10 text-primary dark:bg-primary/20 flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium dark:text-white"
-            href="#"
-          >
-            Markets
-          </a>
-          <a
-            class="hover:text-primary group flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800"
-            href="#"
-          >
-            AI News
-          </a>
-        </nav>
-      </div>
-      <div class="group relative mx-4 flex max-w-xl flex-1 justify-center">
-        <div class="relative w-full">
-          <span
-            class="material-symbols-outlined group-focus-within:text-primary pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-slate-400 transition-colors"
-            >search</span
-          >
-          <input
-            class="focus:ring-primary/50 focus:border-primary dark:focus:bg-surface-dark w-full rounded-lg border border-transparent bg-slate-100 py-2 pr-20 pl-10 text-sm text-slate-900 shadow-sm transition-all placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:outline-none dark:border-slate-700/50 dark:bg-[#151d25] dark:text-white"
-            placeholder="Quick Search (Coins, Pairs...)"
-            type="text"
-          />
-          <div class="pointer-events-none absolute top-1/2 right-3 flex -translate-y-1/2 items-center gap-1">
-            <kbd
-              class="hidden h-5 items-center gap-1 rounded border border-slate-300 bg-slate-100 px-1.5 font-mono text-[10px] font-medium text-slate-500 sm:inline-flex dark:border-slate-600 dark:bg-slate-800 dark:text-slate-400"
-            >
-              <span class="text-xs">⌘</span>K
-            </kbd>
+        <div class="dark:bg-border-dark h-6 w-px bg-gray-200"></div>
+        <div class="group flex cursor-pointer items-center gap-3">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-yellow-500">currency_bitcoin</span>
+            <h2 class="text-base font-bold">BTC/USDT</h2>
+            <span class="material-symbols-outlined text-sm text-gray-400">expand_more</span>
           </div>
-          <div
-            class="invisible absolute top-full left-0 z-50 mt-2 w-full overflow-hidden rounded-xl border border-slate-200 bg-white/95 opacity-0 shadow-2xl ring-1 ring-black/5 backdrop-blur-xl transition-all duration-200 group-focus-within:visible group-focus-within:opacity-100 dark:border-slate-700 dark:bg-[#1e2832]/95"
-          >
-            <div class="border-b border-slate-200/50 p-2 dark:border-slate-700/50">
-              <div class="mb-1 flex items-center justify-between px-3 py-1.5">
-                <span class="text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500"
-                  >Assets</span
-                >
-                <span class="text-primary cursor-pointer text-[10px] font-medium hover:underline">View All</span>
-              </div>
-              <a
-                class="group/item flex items-center gap-3 rounded-lg border border-transparent px-3 py-2.5 transition-all hover:border-slate-200 hover:bg-slate-100 dark:hover:border-slate-700/50 dark:hover:bg-white/5"
-                href="#"
-              >
-                <img
-                  alt="BTC"
-                  class="size-8 rounded-full"
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuAtCoBgKxkMmCskXV8MRwbhVTWlLyxThNu0xG4jE3DMz1g2FYNqNWztRv4JLXZmIxYnzze5pa3De21yJvCsMBDRL-ktsqz69koXS0nZ1f9EpUO7MMFuRaBcWq60oKfHIJc7BnSy9YZgpTEy7fLyOnLFHSyZifjfsPsSa3fAX-Q9HjXoo5tgCjwy0Ma3sJyPxKqryQCchDZHkA2dbvnibZwk0izQ73NGihdjw1k1qd7-Iu9EC4igoxYERwQVdTG-m-D1KRUE5e_gE5DA"
-                />
-                <div class="flex flex-col">
-                  <span class="group-hover/item:text-primary text-sm font-medium text-slate-700 dark:text-slate-200"
-                    >Bitcoin</span
-                  >
-                  <span class="text-xs text-slate-500">BTC</span>
-                </div>
-                <div class="ml-auto text-right">
-                  <div class="text-sm font-medium text-slate-700 dark:text-slate-200">$64,230</div>
-                  <div class="text-accent-green text-xs font-medium">+2.4%</div>
-                </div>
-              </a>
-              <a
-                class="group/item flex items-center gap-3 rounded-lg border border-transparent px-3 py-2.5 transition-all hover:border-slate-200 hover:bg-slate-100 dark:hover:border-slate-700/50 dark:hover:bg-white/5"
-                href="#"
-              >
-                <img
-                  alt="ETH"
-                  class="size-8 rounded-full"
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJQ6cUviE2BBvNCTmTVJfhu90FsSOoJfb1dynbwkQvNsP2YWY2Dqq3j5LHVsTjbqUfvKRyp68rE_vJJO8BnPZxU5PE6IaQbZCsEK71ANBDjh-5My8yDcFdg5mbpja2S8V-HO6Gm6mO0OE_ViNIW76BAUvx7te6qw0IqjzzIimJYsp0-gOSsNmjb1vsuzfdnY-U4RW6jrUcfPDYXSTUV6CPg0TQt8Ujdp7lfyENyzZT0Y9F8LSLoxGsnEhbnxbNNrt2s3muoaKhi-_D"
-                />
-                <div class="flex flex-col">
-                  <span class="group-hover/item:text-primary text-sm font-medium text-slate-700 dark:text-slate-200"
-                    >Ethereum</span
-                  >
-                  <span class="text-xs text-slate-500">ETH</span>
-                </div>
-                <div class="ml-auto text-right">
-                  <div class="text-sm font-medium text-slate-700 dark:text-slate-200">$3,450</div>
-                  <div class="text-accent-red text-xs font-medium">-0.5%</div>
-                </div>
-              </a>
-            </div>
-            <div class="border-b border-slate-200/50 bg-slate-50/50 p-2 dark:border-slate-700/50 dark:bg-black/10">
-              <div class="mb-1 px-3 py-1.5">
-                <span class="text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500"
-                  >AI News Insights</span
-                >
-              </div>
-              <a
-                class="group/news flex items-start gap-3 rounded-lg border border-transparent px-3 py-2 transition-all hover:border-slate-200 hover:bg-slate-100 dark:hover:border-slate-700/50 dark:hover:bg-white/5"
-                href="#"
-              >
-                <div class="text-accent-green bg-accent-green/10 mt-0.5 shrink-0 rounded p-1">
-                  <span class="material-symbols-outlined block text-sm">psychology</span>
-                </div>
-                <div class="min-w-0 flex-1">
-                  <p
-                    class="group-hover/news:text-primary truncate text-sm leading-snug font-medium text-slate-700 dark:text-slate-300"
-                  >
-                    Bullish Sentiment on BTC Halving Event
-                  </p>
-                  <div class="mt-1 flex items-center gap-2">
-                    <span class="text-[10px] text-slate-400">Positive • 5m ago</span>
-                  </div>
-                </div>
-              </a>
-              <a
-                class="group/news flex items-start gap-3 rounded-lg border border-transparent px-3 py-2 transition-all hover:border-slate-200 hover:bg-slate-100 dark:hover:border-slate-700/50 dark:hover:bg-white/5"
-                href="#"
-              >
-                <div class="mt-0.5 shrink-0 rounded bg-orange-400/10 p-1 text-orange-400">
-                  <span class="material-symbols-outlined block text-sm">warning</span>
-                </div>
-                <div class="min-w-0 flex-1">
-                  <p
-                    class="group-hover/news:text-primary truncate text-sm leading-snug font-medium text-slate-700 dark:text-slate-300"
-                  >
-                    Regulatory Uncertainty in EU Market
-                  </p>
-                  <div class="mt-1 flex items-center gap-2">
-                    <span class="text-[10px] text-slate-400">Caution • 24m ago</span>
-                  </div>
-                </div>
-              </a>
-            </div>
-            <div class="bg-slate-100/50 p-2 dark:bg-black/20">
-              <div class="mb-1 px-3 py-1.5">
-                <span class="text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500"
-                  >Quick Tools</span
-                >
-              </div>
-              <div class="grid grid-cols-2 gap-2">
-                <a
-                  class="group/tool flex items-center gap-2 rounded-lg border border-transparent px-3 py-2 transition-all hover:border-slate-200 hover:bg-white dark:hover:border-slate-700 dark:hover:bg-slate-800"
-                  href="#"
-                >
-                  <span class="material-symbols-outlined text-primary text-lg">auto_graph</span>
-                  <span class="group-hover/tool:text-primary text-xs font-medium text-slate-700 dark:text-slate-300"
-                    >AI Analysis</span
-                  >
-                </a>
-                <a
-                  class="group/tool flex items-center gap-2 rounded-lg border border-transparent px-3 py-2 transition-all hover:border-slate-200 hover:bg-white dark:hover:border-slate-700 dark:hover:bg-slate-800"
-                  href="#"
-                >
-                  <span class="material-symbols-outlined text-lg text-purple-400">account_balance_wallet</span>
-                  <span class="group-hover/tool:text-primary text-xs font-medium text-slate-700 dark:text-slate-300"
-                    >Portfolio</span
-                  >
-                </a>
-              </div>
-            </div>
-          </div>
+          <span class="text-bull text-sm font-medium">+1.24%</span>
         </div>
       </div>
-      <div class="flex shrink-0 items-center gap-4">
-        <button
-          class="hover:text-primary rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800"
-        >
-          <span class="material-symbols-outlined block text-xl">notifications</span>
+      <!-- Middle: Market Stats -->
+      <div class="hidden items-center gap-6 text-sm md:flex">
+        <div class="flex flex-col">
+          <span class="text-xs text-gray-500 dark:text-gray-400">Mark Price</span>
+          <span class="text-bull font-mono font-bold">$42,350.50</span>
+        </div>
+        <div class="flex flex-col">
+          <span class="text-xs text-gray-500 dark:text-gray-400">24h High</span>
+          <span class="font-mono font-medium">$43,100.00</span>
+        </div>
+        <div class="flex flex-col">
+          <span class="text-xs text-gray-500 dark:text-gray-400">24h Low</span>
+          <span class="font-mono font-medium">$41,200.00</span>
+        </div>
+        <div class="flex flex-col">
+          <span class="text-xs text-gray-500 dark:text-gray-400">24h Vol (BTC)</span>
+          <span class="font-mono font-medium">24,591</span>
+        </div>
+      </div>
+      <!-- Right: Actions -->
+      <div class="flex items-center gap-4">
+        <button class="dark:hover:bg-card-dark rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400">
+          <span class="material-symbols-outlined">search</span>
         </button>
         <button
-          class="hover:text-primary rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800"
+          class="dark:hover:bg-card-dark relative rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400"
         >
-          <span class="material-symbols-outlined block text-xl">settings</span>
+          <span class="material-symbols-outlined">notifications</span>
+          <span class="absolute top-2 right-2 h-2 w-2 rounded-full bg-red-500"></span>
         </button>
-        <div class="border-l border-slate-200 pl-4 dark:border-slate-700">
-          <a
-            class="flex items-center gap-3 rounded-lg p-1 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50"
-            href="#"
-          >
-            <div class="flex hidden flex-col items-end sm:flex">
-              <span class="text-sm leading-none font-medium text-slate-900 dark:text-white">Alex Trader</span>
-              <span class="text-primary mt-1 text-xs font-medium">Pro Plan</span>
-            </div>
-            <div
-              class="size-9 rounded-full border-2 border-slate-100 bg-slate-200 bg-cover bg-center shadow-sm dark:border-slate-600 dark:bg-slate-700"
-              data-alt="User profile picture"
-              style="
-                background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAP5LX_bmdaCOsnaWv_36ByBuouME4_DKmSUXv6QmhfMAYt-hiGDpWrFBu1iSMkGqUF6b3Eynpaj-m4GVvG4kI4AINry9VCHu3obqc0X8PiX_TlOClww3yvhOlJTmeYca8AxC7IRbIHd9cUMDGscWsfr-L4IqFldxuAW44-t5sLo5AqJ70FF9yPPex_5xBK3yR1wRISW9D3sWZzy4NqV0GSykM9qYka6wEeJ76fORNNZZA0X5rzxs8n4gMW9umCkGiPDfl5-89aWLwW');
-              "
-            ></div>
-          </a>
+        <div
+          class="from-primary flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-tr to-purple-500 text-xs font-bold text-white"
+        >
+          JD
         </div>
       </div>
     </header>
-    <main class="relative flex h-full flex-1 flex-col overflow-hidden">
-      <div class="shrink-0 p-6 pb-2">
-        <h2 class="mb-6 text-2xl font-bold text-slate-900 dark:text-white">Market Overview</h2>
-        <div class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-          <div
-            class="dark:bg-surface-dark rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700"
-          >
-            <div class="mb-2 flex items-center justify-between">
-              <span class="text-sm font-medium text-slate-500 dark:text-slate-400">Total Market Cap</span>
-              <span class="material-symbols-outlined text-primary text-xl">monetization_on</span>
-            </div>
-            <div class="flex items-end gap-3">
-              <span class="text-2xl font-bold text-slate-900 dark:text-white">$2.32T</span>
-              <span class="text-accent-green mb-1 flex items-center text-sm font-medium">
-                <span class="material-symbols-outlined mr-0.5 text-sm">trending_up</span>
-                1.2%
-              </span>
-            </div>
-          </div>
-          <div
-            class="dark:bg-surface-dark rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700"
-          >
-            <div class="mb-2 flex items-center justify-between">
-              <span class="text-sm font-medium text-slate-500 dark:text-slate-400">24h Volume</span>
-              <span class="material-symbols-outlined text-primary text-xl">bar_chart</span>
-            </div>
-            <div class="flex items-end gap-3">
-              <span class="text-2xl font-bold text-slate-900 dark:text-white">$64.5B</span>
-              <span class="mb-1 text-sm font-medium text-slate-400"> Volatility High </span>
-            </div>
-          </div>
-          <div
-            class="dark:bg-surface-dark rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700"
-          >
-            <div class="mb-2 flex items-center justify-between">
-              <span class="text-sm font-medium text-slate-500 dark:text-slate-400">BTC Dominance</span>
-              <span class="material-symbols-outlined text-primary text-xl">pie_chart</span>
-            </div>
-            <div class="flex items-end gap-3">
-              <span class="text-2xl font-bold text-slate-900 dark:text-white">52.1%</span>
-              <span class="text-accent-red mb-1 flex items-center text-sm font-medium">
-                <span class="material-symbols-outlined mr-0.5 text-sm">trending_down</span>
-                0.4%
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="z-10 flex shrink-0 flex-col items-center justify-between gap-4 px-6 py-2 sm:flex-row">
-        <div class="flex flex-wrap gap-2">
-          <button
-            class="bg-primary shadow-primary/25 rounded-lg px-4 py-2 text-sm font-medium text-white shadow-lg transition-colors hover:bg-blue-600"
-          >
-            All Assets
-          </button>
-          <button
-            class="dark:bg-surface-dark flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700"
-          >
-            <span class="material-symbols-outlined text-base">star</span>
-            Favorites
-          </button>
-          <button
-            class="dark:bg-surface-dark flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700"
-          >
-            <span class="material-symbols-outlined text-base text-purple-400">psychology</span>
-            AI Tokens
-          </button>
-          <button
-            class="dark:bg-surface-dark rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700"
-          >
-            DeFi
-          </button>
-          <button
-            class="dark:bg-surface-dark rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700"
-          >
-            Layer 1
-          </button>
-        </div>
-        <div class="group relative w-full sm:w-auto">
-          <span
-            class="material-symbols-outlined group-focus-within:text-primary absolute top-1/2 left-3 -translate-y-1/2 text-slate-400 transition-colors"
-            >filter_list</span
-          >
-          <select
-            class="dark:bg-surface-dark focus:ring-primary/50 focus:border-primary w-full cursor-pointer appearance-none rounded-lg border border-slate-200 bg-white py-2.5 pr-8 pl-10 text-sm text-slate-900 transition-all focus:ring-2 focus:outline-none sm:w-48 dark:border-slate-700 dark:text-white"
-          >
-            <option>Sort by Rank</option>
-            <option>Sort by Price</option>
-            <option>Sort by 24h %</option>
-            <option>Sort by Volume</option>
-          </select>
-          <span
-            class="material-symbols-outlined pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-sm text-slate-400"
-            >expand_more</span
-          >
-        </div>
-      </div>
-      <div class="flex-1 overflow-auto px-6 py-4">
+    <!-- Main Content Area -->
+    <div class="flex flex-1 overflow-hidden">
+      <!-- Left Column: Chart Area (2/3) -->
+      <main class="dark:border-border-dark relative flex min-w-0 flex-1 flex-col border-r border-gray-200">
+        <!-- Chart Toolbar -->
         <div
-          class="dark:bg-surface-dark w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700"
+          class="dark:border-border-dark flex h-12 items-center gap-4 overflow-x-auto border-b border-gray-200 bg-white px-4 dark:bg-[#111418]"
         >
-          <table class="w-full border-collapse text-left">
-            <thead class="sticky top-0 z-10 bg-slate-50 shadow-sm dark:bg-[#151f28]">
-              <tr>
-                <th
-                  class="w-16 p-4 text-center text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400"
-                >
-                  #
-                </th>
-                <th class="p-4 text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                  Name
-                </th>
-                <th
-                  class="p-4 text-right text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400"
-                >
-                  Price
-                </th>
-                <th
-                  class="p-4 text-right text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400"
-                >
-                  24h %
-                </th>
-                <th class="w-32 p-4 text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                  7d Trend
-                </th>
-                <th
-                  class="p-4 text-right text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400"
-                >
-                  Market Cap
-                </th>
-                <th
-                  class="p-4 text-right text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400"
-                >
-                  Volume (24h)
-                </th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-200 text-sm dark:divide-slate-700">
-              <tr class="group cursor-pointer transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                <td class="p-4 text-center font-medium text-slate-500 dark:text-slate-400">1</td>
-                <td class="p-4">
-                  <div class="flex items-center gap-3">
-                    <img
-                      alt="Bitcoin logo"
-                      class="size-8"
-                      data-alt="Bitcoin logo"
-                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuAtCoBgKxkMmCskXV8MRwbhVTWlLyxThNu0xG4jE3DMz1g2FYNqNWztRv4JLXZmIxYnzze5pa3De21yJvCsMBDRL-ktsqz69koXS0nZ1f9EpUO7MMFuRaBcWq60oKfHIJc7BnSy9YZgpTEy7fLyOnLFHSyZifjfsPsSa3fAX-Q9HjXoo5tgCjwy0Ma3sJyPxKqryQCchDZHkA2dbvnibZwk0izQ73NGihdjw1k1qd7-Iu9EC4igoxYERwQVdTG-m-D1KRUE5e_gE5DA"
-                    />
-                    <div class="flex flex-col">
-                      <span class="font-bold text-slate-900 dark:text-white">Bitcoin</span>
-                      <div class="flex items-center gap-1.5">
-                        <span class="text-xs font-medium text-slate-500">BTC</span>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td class="p-4 text-right font-medium text-slate-900 dark:text-white">$64,230.00</td>
-                <td class="text-accent-green p-4 text-right font-medium">+2.4%</td>
-                <td class="p-4">
-                  <svg class="h-10 w-full" preserveAspectRatio="none" viewBox="0 0 100 40">
-                    <path
-                      d="M0 30 Q 10 35, 20 25 T 40 20 T 60 15 T 80 10 T 100 5"
-                      fill="none"
-                      stroke="#10b981"
-                      stroke-linecap="round"
-                      stroke-width="2"
-                    ></path>
-                  </svg>
-                </td>
-                <td class="p-4 text-right text-slate-600 dark:text-slate-300">$1.26T</td>
-                <td class="p-4 text-right text-slate-600 dark:text-slate-300">$32.1B</td>
-              </tr>
-              <tr class="group cursor-pointer transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                <td class="p-4 text-center font-medium text-slate-500 dark:text-slate-400">2</td>
-                <td class="p-4">
-                  <div class="flex items-center gap-3">
-                    <img
-                      alt="Ethereum logo"
-                      class="size-8"
-                      data-alt="Ethereum logo"
-                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJQ6cUviE2BBvNCTmTVJfhu90FsSOoJfb1dynbwkQvNsP2YWY2Dqq3j5LHVsTjbqUfvKRyp68rE_vJJO8BnPZxU5PE6IaQbZCsEK71ANBDjh-5My8yDcFdg5mbpja2S8V-HO6Gm6mO0OE_ViNIW76BAUvx7te6qw0IqjzzIimJYsp0-gOSsNmjb1vsuzfdnY-U4RW6jrUcfPDYXSTUV6CPg0TQt8Ujdp7lfyENyzZT0Y9F8LSLoxGsnEhbnxbNNrt2s3muoaKhi-_D"
-                    />
-                    <div class="flex flex-col">
-                      <span class="font-bold text-slate-900 dark:text-white">Ethereum</span>
-                      <span class="text-xs font-medium text-slate-500">ETH</span>
-                    </div>
-                  </div>
-                </td>
-                <td class="p-4 text-right font-medium text-slate-900 dark:text-white">$3,450.00</td>
-                <td class="text-accent-red p-4 text-right font-medium">-0.5%</td>
-                <td class="p-4">
-                  <svg class="h-10 w-full" preserveAspectRatio="none" viewBox="0 0 100 40">
-                    <path
-                      d="M0 10 Q 20 15, 40 25 T 60 30 T 80 28 T 100 35"
-                      fill="none"
-                      stroke="#ef4444"
-                      stroke-linecap="round"
-                      stroke-width="2"
-                    ></path>
-                  </svg>
-                </td>
-                <td class="p-4 text-right text-slate-600 dark:text-slate-300">$405B</td>
-                <td class="p-4 text-right text-slate-600 dark:text-slate-300">$15.4B</td>
-              </tr>
-              <tr
-                class="group bg-primary/5 dark:bg-primary/5 cursor-pointer transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50"
-              >
-                <td class="p-4 text-center font-medium text-slate-500 dark:text-slate-400">3</td>
-                <td class="p-4">
-                  <div class="flex items-center gap-3">
-                    <img
-                      alt="Solana logo"
-                      class="size-8"
-                      data-alt="Solana logo"
-                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuCoIc5LTfOINDcrFok2-1pjTZNSn2nxT7SF4W4m4bxl99NsQELSIa_triAull13wdZckQJvRohxVfW9IUQvstyBOS0Uz4lksGfmtonys56Jy7e052H7Fx1-et7zTbo3qzaf_IpbOxOGe4uCM_3qmq0hiaZNAW1Cx9DXRaD6WfP7BndYUj9T_04aW3DcSJUQsB2ypRjDQpD0G13Xy8z-ZDBkVn6UY2KQlH6jyHn4EtK85sZ6F96cg7-iweih_WdhEAeuwt9JbfpZCIY1"
-                    />
-                    <div class="flex flex-col">
-                      <span class="flex items-center gap-2 font-bold text-slate-900 dark:text-white">
-                        Solana
-                        <span
-                          class="rounded border border-indigo-500/30 bg-indigo-500/20 px-1.5 py-0.5 text-[10px] font-bold tracking-wider text-indigo-400 uppercase"
-                          >AI Pick</span
-                        >
-                      </span>
-                      <span class="text-xs font-medium text-slate-500">SOL</span>
-                    </div>
-                  </div>
-                </td>
-                <td class="p-4 text-right font-medium text-slate-900 dark:text-white">$145.20</td>
-                <td class="text-accent-green p-4 text-right font-medium">+5.1%</td>
-                <td class="p-4">
-                  <svg class="h-10 w-full" preserveAspectRatio="none" viewBox="0 0 100 40">
-                    <path
-                      d="M0 35 Q 15 30, 30 32 T 50 20 T 70 15 T 100 5"
-                      fill="none"
-                      stroke="#10b981"
-                      stroke-linecap="round"
-                      stroke-width="2"
-                    ></path>
-                  </svg>
-                </td>
-                <td class="p-4 text-right text-slate-600 dark:text-slate-300">$65.1B</td>
-                <td class="p-4 text-right text-slate-600 dark:text-slate-300">$4.2B</td>
-              </tr>
-              <tr class="group cursor-pointer transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                <td class="p-4 text-center font-medium text-slate-500 dark:text-slate-400">4</td>
-                <td class="p-4">
-                  <div class="flex items-center gap-3">
-                    <img
-                      alt="BNB logo"
-                      class="size-8"
-                      data-alt="BNB logo"
-                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuD48ymZuP4IkpbZIGKSqdZ6U-9YZcZ0xR8FWcPYJOXqE4jr-0JeHg0poYBARTa44OQl86dyAGliVLjsjgqYYt5sJX-j6HsunWCmHiUWLRmdKZo4KLvRALSLt01EghnIC2aiKs5_TT6jiYt16v6RXGpXpr1S37OsxcYcFtksFTLbaeC98qCrDaOomP6bcMvqlF0R9pVVzEk6jIPAoOIwn1QuxZtHazrBEQcmyA5OmoeLSpf3FjxCcr29S_nb79PpskjuA4olEeNjQ8ZO"
-                    />
-                    <div class="flex flex-col">
-                      <span class="font-bold text-slate-900 dark:text-white">BNB</span>
-                      <span class="text-xs font-medium text-slate-500">BNB</span>
-                    </div>
-                  </div>
-                </td>
-                <td class="p-4 text-right font-medium text-slate-900 dark:text-white">$590.15</td>
-                <td class="text-accent-green p-4 text-right font-medium">+0.2%</td>
-                <td class="p-4">
-                  <svg class="h-10 w-full" preserveAspectRatio="none" viewBox="0 0 100 40">
-                    <path
-                      d="M0 20 L 20 22 L 40 18 L 60 21 L 80 19 L 100 20"
-                      fill="none"
-                      stroke="#10b981"
-                      stroke-linecap="round"
-                      stroke-width="2"
-                    ></path>
-                  </svg>
-                </td>
-                <td class="p-4 text-right text-slate-600 dark:text-slate-300">$87.3B</td>
-                <td class="p-4 text-right text-slate-600 dark:text-slate-300">$1.1B</td>
-              </tr>
-              <tr class="group cursor-pointer transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                <td class="p-4 text-center font-medium text-slate-500 dark:text-slate-400">5</td>
-                <td class="p-4">
-                  <div class="flex items-center gap-3">
-                    <img
-                      alt="XRP logo"
-                      class="size-8"
-                      data-alt="XRP logo"
-                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuAuKHexRW9e7vgw7JRBJaBgxy2wDvCOdNi1ANSkSHRPFwSWdDxFfAkL61GS_h8pY3s0t_6svrbKM30iAAIa0ajW9-ibUDrkkVfHx3SMiMB1SiNzipHRJ46f9542X0qUedUxqX3D5qKQON3CQHVpgqOkuGQOxkhm_ucM2-Eg_TMhgop7ujwmQHGC5geFJh5P5HdN4ItYzxBantdtbqpkTt2XAwamNOc9-pyUKYOdoprwcPrNCyngNbtgIbvqIzyi270cLRt-UQa9QgSn"
-                    />
-                    <div class="flex flex-col">
-                      <span class="font-bold text-slate-900 dark:text-white">XRP</span>
-                      <span class="text-xs font-medium text-slate-500">XRP</span>
-                    </div>
-                  </div>
-                </td>
-                <td class="p-4 text-right font-medium text-slate-900 dark:text-white">$0.62</td>
-                <td class="text-accent-red p-4 text-right font-medium">-1.1%</td>
-                <td class="p-4">
-                  <svg class="h-10 w-full" preserveAspectRatio="none" viewBox="0 0 100 40">
-                    <path
-                      d="M0 15 Q 25 10, 50 20 T 75 25 T 100 30"
-                      fill="none"
-                      stroke="#ef4444"
-                      stroke-linecap="round"
-                      stroke-width="2"
-                    ></path>
-                  </svg>
-                </td>
-                <td class="p-4 text-right text-slate-600 dark:text-slate-300">$34.2B</td>
-                <td class="p-4 text-right text-slate-600 dark:text-slate-300">$900M</td>
-              </tr>
-              <tr
-                class="group bg-primary/5 dark:bg-primary/5 cursor-pointer transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50"
-              >
-                <td class="p-4 text-center font-medium text-slate-500 dark:text-slate-400">34</td>
-                <td class="p-4">
-                  <div class="flex items-center gap-3">
-                    <div
-                      class="flex size-8 items-center justify-center rounded-full border border-slate-700 bg-slate-800 text-xs font-bold text-white"
-                    >
-                      R
-                    </div>
-                    <div class="flex flex-col">
-                      <span class="flex items-center gap-2 font-bold text-slate-900 dark:text-white">
-                        Render
-                        <span
-                          class="rounded border border-indigo-500/30 bg-indigo-500/20 px-1.5 py-0.5 text-[10px] font-bold tracking-wider text-indigo-400 uppercase"
-                          >AI Pick</span
-                        >
-                      </span>
-                      <span class="text-xs font-medium text-slate-500">RNDR</span>
-                    </div>
-                  </div>
-                </td>
-                <td class="p-4 text-right font-medium text-slate-900 dark:text-white">$10.24</td>
-                <td class="text-accent-green p-4 text-right font-medium">+12.4%</td>
-                <td class="p-4">
-                  <svg class="h-10 w-full" preserveAspectRatio="none" viewBox="0 0 100 40">
-                    <path
-                      d="M0 35 L 20 30 L 40 32 L 60 15 L 80 10 L 100 5"
-                      fill="none"
-                      stroke="#10b981"
-                      stroke-linecap="round"
-                      stroke-width="2"
-                    ></path>
-                  </svg>
-                </td>
-                <td class="p-4 text-right text-slate-600 dark:text-slate-300">$3.8B</td>
-                <td class="p-4 text-right text-slate-600 dark:text-slate-300">$450M</td>
-              </tr>
-              <tr class="group cursor-pointer transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                <td class="p-4 text-center font-medium text-slate-500 dark:text-slate-400">10</td>
-                <td class="p-4">
-                  <div class="flex items-center gap-3">
-                    <img
-                      alt="Cardano logo"
-                      class="size-8"
-                      data-alt="Cardano logo"
-                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuDZAnDhOPtyT_LJ0YZsW7xfW41ZuiT2T6E_XB3slYml5_pX7nWNoXiCQYE9vn1zmlqAr4GJ186B1DMBTbmaJtLH5QgxgPVvCHo1JV0shg3_HEyyIkFya6DJnop_KtkrtICSmNqw4zosPt2YRkj2LSlfC14WGmfS6y7VoioUodFOyAppp9hf8SK1ZAQVtwhCwPrwqrjFgpvm3esxgLGzNdrvx646fk-C3v0DCLffT7iUjNydNiJkeNul-DvMFAm29k1l-ed4_wD40YTX"
-                    />
-                    <div class="flex flex-col">
-                      <span class="font-bold text-slate-900 dark:text-white">Cardano</span>
-                      <span class="text-xs font-medium text-slate-500">ADA</span>
-                    </div>
-                  </div>
-                </td>
-                <td class="p-4 text-right font-medium text-slate-900 dark:text-white">$0.45</td>
-                <td class="p-4 text-right font-medium text-slate-500 dark:text-slate-400">0.0%</td>
-                <td class="p-4">
-                  <svg class="h-10 w-full" preserveAspectRatio="none" viewBox="0 0 100 40">
-                    <path
-                      d="M0 20 L 100 20"
-                      fill="none"
-                      stroke="#94a3b8"
-                      stroke-dasharray="4 2"
-                      stroke-linecap="round"
-                      stroke-width="2"
-                    ></path>
-                  </svg>
-                </td>
-                <td class="p-4 text-right text-slate-600 dark:text-slate-300">$16.2B</td>
-                <td class="p-4 text-right text-slate-600 dark:text-slate-300">$290M</td>
-              </tr>
-            </tbody>
-          </table>
+          <!-- Timeframes -->
+          <div class="flex gap-1">
+            <button
+              class="dark:hover:bg-card-dark rounded px-3 py-1 text-xs font-medium text-gray-500 hover:bg-gray-100 dark:text-gray-400"
+            >
+              15m
+            </button>
+            <button class="dark:bg-card-dark text-primary rounded bg-gray-100 px-3 py-1 text-xs font-bold font-medium">
+              1H
+            </button>
+            <button
+              class="dark:hover:bg-card-dark rounded px-3 py-1 text-xs font-medium text-gray-500 hover:bg-gray-100 dark:text-gray-400"
+            >
+              4H
+            </button>
+            <button
+              class="dark:hover:bg-card-dark rounded px-3 py-1 text-xs font-medium text-gray-500 hover:bg-gray-100 dark:text-gray-400"
+            >
+              1D
+            </button>
+            <button
+              class="dark:hover:bg-card-dark rounded px-3 py-1 text-xs font-medium text-gray-500 hover:bg-gray-100 dark:text-gray-400"
+            >
+              1W
+            </button>
+          </div>
+          <div class="dark:bg-border-dark h-4 w-px bg-gray-300"></div>
+          <!-- Tools -->
+          <div class="flex items-center gap-2">
+            <button
+              class="dark:hover:bg-card-dark flex items-center gap-1 rounded px-2 py-1 text-xs font-medium text-gray-600 hover:bg-gray-100 dark:text-gray-300"
+            >
+              <span class="material-symbols-outlined text-[18px]">show_chart</span>
+              <span>Indicators</span>
+            </button>
+            <button
+              class="dark:hover:bg-card-dark flex items-center gap-1 rounded px-2 py-1 text-xs font-medium text-gray-600 hover:bg-gray-100 dark:text-gray-300"
+            >
+              <span class="material-symbols-outlined text-[18px]">candlestick_chart</span>
+              <span>Candles</span>
+            </button>
+          </div>
         </div>
-        <div class="mt-6 mb-8 flex justify-center">
-          <button
-            class="dark:bg-surface-dark rounded-lg border border-slate-200 bg-white px-6 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700"
+        <!-- Chart Canvas (Simulated) -->
+        <div class="chart-grid group relative flex-1 overflow-hidden bg-[#111418]">
+          <!-- Watermark -->
+          <div class="pointer-events-none absolute inset-0 flex items-center justify-center opacity-5">
+            <h1 class="text-8xl font-bold tracking-tighter text-white">TradeAI</h1>
+          </div>
+          <!-- Price Axis (Right) -->
+          <div
+            class="border-border-dark absolute top-0 right-0 bottom-8 z-10 flex w-14 flex-col justify-between border-l bg-[#111418] py-4 pr-2 text-right font-mono text-[10px] text-gray-400 select-none"
           >
-            Load More Assets
-          </button>
+            <span>44,000</span>
+            <span>43,500</span>
+            <span>43,000</span>
+            <span class="bg-primary ml-[-4px] rounded-l px-1 py-0.5 text-white">42,350</span>
+            <span>42,000</span>
+            <span>41,500</span>
+            <span>41,000</span>
+            <span>40,500</span>
+          </div>
+          <!-- Time Axis (Bottom) -->
+          <div
+            class="border-border-dark absolute right-14 bottom-0 left-0 z-10 flex h-8 items-center justify-between border-t bg-[#111418] px-8 font-mono text-[10px] text-gray-400 select-none"
+          >
+            <span>12:00</span>
+            <span>13:00</span>
+            <span>14:00</span>
+            <span>15:00</span>
+            <span>16:00</span>
+            <span>17:00</span>
+            <span>18:00</span>
+          </div>
+          <!-- Chart Visuals (SVG Overlay) -->
+          <div class="absolute inset-0 right-14 bottom-8 p-4">
+            <svg class="h-full w-full" preserveaspectratio="none" viewbox="0 0 1000 400">
+              <!-- Defs for Gradients -->
+              <defs>
+                <lineargradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0%" stop-color="#258cf4" stop-opacity="0.2"></stop>
+                  <stop offset="100%" stop-color="#258cf4" stop-opacity="0"></stop>
+                </lineargradient>
+              </defs>
+              <!-- Volume Bars (Simulated at bottom) -->
+              <g opacity="0.3">
+                <rect fill="#26a69a" height="50" width="15" x="10" y="350"></rect>
+                <rect fill="#ef5350" height="80" width="15" x="30" y="320"></rect>
+                <rect fill="#26a69a" height="40" width="15" x="50" y="360"></rect>
+                <rect fill="#26a69a" height="100" width="15" x="70" y="300"></rect>
+                <rect fill="#ef5350" height="60" width="15" x="90" y="340"></rect>
+                <rect fill="#26a69a" height="30" width="15" x="110" y="370"></rect>
+                <rect fill="#ef5350" height="50" width="15" x="130" y="350"></rect>
+                <!-- ... sparse volume for rest ... -->
+                <rect fill="#26a69a" height="90" width="15" x="800" y="310"></rect>
+                <rect fill="#ef5350" height="60" width="15" x="820" y="340"></rect>
+                <rect fill="#26a69a" height="120" width="15" x="840" y="280"></rect>
+                <rect fill="#ef5350" height="70" width="15" x="860" y="330"></rect>
+              </g>
+              <!-- Main Line -->
+              <path
+                d="M0,250 C50,240 100,280 150,260 C200,240 250,180 300,190 C350,200 400,220 450,200 C500,180 550,120 600,140 C650,160 700,100 750,110 C800,120 850,80 900,90 C950,100 1000,60 1000,60"
+                fill="url(#chartGradient)"
+                stroke="#258cf4"
+                stroke-width="2"
+              ></path>
+              <!-- AI Prediction Overlay (Dotted Line) -->
+              <path
+                d="M1000,60 C1050,40 1100,20 1150,10"
+                fill="none"
+                opacity="0.7"
+                stroke="#258cf4"
+                stroke-dasharray="5,5"
+                stroke-width="2"
+              ></path>
+              <!-- Event Marker on Chart -->
+              <g transform="translate(840, 80)">
+                <circle cx="0" cy="0" fill="#258cf4" fill-opacity="0.2" r="12"></circle>
+                <circle class="animate-pulse" cx="0" cy="0" fill="#258cf4" r="6"></circle>
+                <text fill="#fff" font-family="Inter" font-size="12" font-weight="bold" x="15" y="4">AI Signal</text>
+              </g>
+            </svg>
+            <!-- Current Price Line (Horizontal) -->
+            <div
+              class="border-primary pointer-events-none absolute top-[15%] right-0 left-0 border-t border-dashed opacity-50"
+            ></div>
+          </div>
+          <!-- Floating Chart Action Buttons (Bottom Center) -->
+          <div class="absolute bottom-12 left-1/2 z-20 flex -translate-x-1/2 gap-4">
+            <button
+              class="bg-bull flex items-center gap-2 rounded-lg px-8 py-2 font-bold text-white shadow-lg shadow-teal-900/20 transition-all hover:bg-teal-600"
+            >
+              Buy Long
+            </button>
+            <button
+              class="bg-bear flex items-center gap-2 rounded-lg px-8 py-2 font-bold text-white shadow-lg shadow-red-900/20 transition-all hover:bg-red-600"
+            >
+              Sell Short
+            </button>
+          </div>
         </div>
-      </div>
-    </main>
+      </main>
+      <!-- Right Column: AI Insight Panel (1/3) -->
+      <aside
+        class="dark:border-border-dark z-10 flex w-[400px] shrink-0 flex-col overflow-y-auto border-l border-gray-200 bg-white dark:bg-[#111418]"
+      >
+        <div class="flex flex-col gap-6 p-5">
+          <!-- Header -->
+          <div class="flex items-center justify-between">
+            <h2 class="flex items-center gap-2 text-lg font-bold">
+              <span class="material-symbols-outlined text-primary">psychology</span>
+              AI Insights
+            </h2>
+            <span class="bg-primary/20 text-primary border-primary/20 rounded border px-2 py-0.5 text-[10px] font-bold"
+              >LIVE</span
+            >
+          </div>
+          <!-- Prediction Card -->
+          <div
+            class="from-primary/10 border-primary/20 relative overflow-hidden rounded-xl border bg-gradient-to-br to-transparent p-4 dark:from-[#1c232e] dark:to-[#111418]"
+          >
+            <div class="absolute top-0 right-0 p-3 opacity-10">
+              <span class="material-symbols-outlined text-6xl">trending_up</span>
+            </div>
+            <div class="mb-4 flex items-start justify-between">
+              <div>
+                <p class="mb-1 text-xs font-medium tracking-wider text-gray-500 uppercase">Trend Prediction</p>
+                <h3 class="text-bull flex items-center gap-2 text-2xl font-bold">
+                  BULLISH
+                  <span class="material-symbols-outlined text-2xl">arrow_upward</span>
+                </h3>
+              </div>
+              <div class="text-right">
+                <p class="mb-1 text-xs font-medium tracking-wider text-gray-500 uppercase">Confidence</p>
+                <p class="text-xl font-bold text-white">85%</p>
+              </div>
+            </div>
+            <!-- Sentiment Gauge Visual -->
+            <div class="mb-3 rounded-lg bg-black/20 p-3 dark:bg-black/40">
+              <div class="mb-1 flex justify-between text-xs text-gray-400">
+                <span>Fear</span>
+                <span class="font-bold text-white">Greed (68)</span>
+              </div>
+              <div class="h-2 w-full overflow-hidden rounded-full bg-gray-700">
+                <div
+                  class="relative h-full w-[68%] rounded-full bg-gradient-to-r from-red-500 via-yellow-500 to-green-500"
+                >
+                  <div
+                    class="absolute top-0 right-0 bottom-0 w-1 bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)]"
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- The "Why" Section (Causal Analysis) -->
+          <div class="flex flex-col gap-2">
+            <h3 class="text-sm font-bold text-gray-700 dark:text-gray-300">Causal Analysis</h3>
+            <div
+              class="group dark:border-border-dark dark:bg-card-dark relative rounded-lg border border-gray-200 bg-gray-50 p-4"
+            >
+              <p class="text-sm leading-relaxed text-gray-600 dark:text-gray-300">
+                On-chain data indicates significant whale accumulation in the $41.8k - $42.2k zone over the last 4
+                hours. Combined with the recent SEC clarity on ETF filings...
+              </p>
+              <!-- VIP Blurring -->
+              <div
+                class="mt-2 text-sm leading-relaxed text-gray-600 opacity-50 blur-[3px] select-none dark:text-gray-300"
+              >
+                Furthermore, the RSI divergence on the 4H chart suggests a weakening of bearish momentum. Our NLP models
+                parsed 15,000 tweets and found a 30% spike in positive sentiment keywords related to institutional
+                adoption.
+              </div>
+              <!-- Unlock CTA -->
+              <div
+                class="absolute inset-0 flex items-center justify-center bg-white/10 backdrop-blur-[1px] dark:bg-black/10"
+              >
+                <button
+                  class="flex items-center gap-2 rounded-lg bg-gray-900 px-4 py-2 text-sm font-bold text-white shadow-lg transition-transform hover:scale-105 dark:bg-white dark:text-gray-900"
+                >
+                  <span class="material-symbols-outlined text-base">lock</span>
+                  Unlock Full Reasoning
+                </button>
+              </div>
+            </div>
+          </div>
+          <hr class="dark:border-border-dark border-gray-200" />
+          <!-- News Feed -->
+          <div class="flex flex-col gap-3">
+            <div class="flex items-center justify-between">
+              <h3 class="text-sm font-bold text-gray-700 dark:text-gray-300">Smart News Feed</h3>
+              <button class="text-primary text-xs hover:underline">View All</button>
+            </div>
+            <!-- News Item 1 -->
+            <div
+              class="group dark:hover:bg-card-dark -mx-2 flex cursor-pointer items-start gap-3 rounded-lg p-2 transition-colors hover:bg-gray-50"
+            >
+              <div
+                class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gray-200 dark:bg-gray-700"
+              >
+                <!-- Placeholder for news image -->
+                <span class="material-symbols-outlined text-gray-400">newspaper</span>
+              </div>
+              <div class="flex flex-col gap-1">
+                <div class="flex items-center gap-2">
+                  <span class="text-[10px] font-bold text-gray-500 uppercase">CoinDesk • 2m ago</span>
+                  <span
+                    class="rounded border border-green-500/20 bg-green-500/20 px-1.5 py-0.5 text-[9px] font-bold text-green-500"
+                    >HIGH IMPACT</span
+                  >
+                </div>
+                <h4
+                  class="group-hover:text-primary text-sm leading-tight font-medium text-gray-900 transition-colors dark:text-gray-100"
+                >
+                  ETF Approval rumors circulate as SEC meeting concludes early
+                </h4>
+              </div>
+            </div>
+            <!-- News Item 2 -->
+            <div
+              class="group dark:hover:bg-card-dark -mx-2 flex cursor-pointer items-start gap-3 rounded-lg p-2 transition-colors hover:bg-gray-50"
+            >
+              <div
+                class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gray-200 dark:bg-gray-700"
+              >
+                <span class="material-symbols-outlined text-gray-400">candlestick_chart</span>
+              </div>
+              <div class="flex flex-col gap-1">
+                <div class="flex items-center gap-2">
+                  <span class="text-[10px] font-bold text-gray-500 uppercase">CryptoQuant • 15m ago</span>
+                  <span
+                    class="rounded border border-yellow-500/20 bg-yellow-500/20 px-1.5 py-0.5 text-[9px] font-bold text-yellow-500"
+                    >MED IMPACT</span
+                  >
+                </div>
+                <h4
+                  class="group-hover:text-primary text-sm leading-tight font-medium text-gray-900 transition-colors dark:text-gray-100"
+                >
+                  Exchange outflow hits 3-month high: 12,000 BTC withdrawn
+                </h4>
+              </div>
+            </div>
+            <!-- News Item 3 -->
+            <div
+              class="group dark:hover:bg-card-dark -mx-2 flex cursor-pointer items-start gap-3 rounded-lg p-2 transition-colors hover:bg-gray-50"
+            >
+              <div
+                class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gray-200 dark:bg-gray-700"
+              >
+                <span class="material-symbols-outlined text-gray-400">forum</span>
+              </div>
+              <div class="flex flex-col gap-1">
+                <div class="flex items-center gap-2">
+                  <span class="text-[10px] font-bold text-gray-500 uppercase">Twitter/X Analysis • 42m ago</span>
+                  <span
+                    class="rounded border border-gray-500/20 bg-gray-500/20 px-1.5 py-0.5 text-[9px] font-bold text-gray-500"
+                    >LOW IMPACT</span
+                  >
+                </div>
+                <h4
+                  class="group-hover:text-primary text-sm leading-tight font-medium text-gray-900 transition-colors dark:text-gray-100"
+                >
+                  Trending Topic: "Buy the Dip" mentions up 150%
+                </h4>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
   </body>
 </html>
