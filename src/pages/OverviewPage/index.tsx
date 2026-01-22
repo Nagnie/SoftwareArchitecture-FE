@@ -156,9 +156,15 @@ export const OverviewPage = () => {
     setSortConfig({ key, direction });
   };
 
+  const handleTickerSelect = (ticker: TickerData) => {
+    // Khi click vào item trong dropdown, scroll đến item đó hoặc hiển thị chi tiết
+    setSearch(ticker.symbol);
+    setCurrentPage(1);
+  };
+
   return (
     <div>
-      <Header onUpdateSearch={setSearch} />
+      <Header onUpdateSearch={setSearch} onTickerSelect={handleTickerSelect} />
 
       <main className='mx-auto mt-8 flex max-w-7xl flex-col gap-8 px-4'>
         {/* Title And Filter */}

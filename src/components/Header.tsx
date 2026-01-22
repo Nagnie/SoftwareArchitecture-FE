@@ -1,4 +1,5 @@
 import { ModeToggle } from '@/components/ModeToggle';
+import { MarketSearchBar } from '@/components/MarketSearchBar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { buttonVariants } from '@/components/ui/button';
 import {
@@ -11,27 +12,22 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { useShortcut } from '@/hooks/useShortcut';
-import { Search } from 'lucide-react';
-import { useRef, useState } from 'react';
+import type { TickerData } from '@/services/market';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 
 interface HeaderProps {
   onUpdateSearch?: (query: string) => void;
+  onTickerSelect?: (ticker: TickerData) => void;
 }
 
-export const Header = ({ onUpdateSearch }: HeaderProps) => {
-  const [search, setSearch] = useState('');
-
+export const Header = ({ onUpdateSearch, onTickerSelect }: HeaderProps) => {
   const navigate = useNavigate();
 
   const isLoggedIn = true; // Giả sử trạng thái đăng nhập được xác định ở đây
 
-  const searchRef = useRef<HTMLInputElement>(null);
-
   useShortcut(['ctrl', 'k'], () => {
-    searchRef.current?.focus();
+    // Focus sẽ được xử lý bởi MarketSearchBar
   });
 
   useShortcut(['ctrl', 'q'], () => {
@@ -52,12 +48,6 @@ export const Header = ({ onUpdateSearch }: HeaderProps) => {
 
   const handleProfile = () => {
     navigate('/profile');
-  };
-
-  const handleEnterPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && onUpdateSearch) {
-      onUpdateSearch(search);
-    }
   };
 
   return (
@@ -94,26 +84,7 @@ export const Header = ({ onUpdateSearch }: HeaderProps) => {
       </div>
       {/* Search */}
       <div className='flex max-w-xl flex-1 justify-center'>
-        <InputGroup className='w-full'>
-          <InputGroupInput
-            placeholder='Search...'
-            ref={searchRef}
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-            }}
-            onKeyDown={handleEnterPress}
-          />
-          <InputGroupAddon>
-            <Search />
-          </InputGroupAddon>
-          {/* <InputGroupAddon align='inline-end'>12 results</InputGroupAddon> */}
-          <InputGroupAddon align='inline-end'>
-            <span className='bg-muted text-muted-foreground rounded border px-1.5 py-0.5 font-mono text-xs font-medium'>
-              ⌘K
-            </span>
-          </InputGroupAddon>
-        </InputGroup>
+        <MarketSearchBar onViewAll={onUpdateSearch} onTickerSelect={onTickerSelect} />
       </div>
       {/* User Account and Mode Toggle */}
       <div className='flex shrink-0 items-center gap-1'>
