@@ -1,4 +1,5 @@
 import { ModeToggle } from '@/components/ModeToggle';
+import { MarketSearchBar } from '@/components/MarketSearchBar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { buttonVariants } from '@/components/ui/button';
 import {
@@ -11,21 +12,22 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { useShortcut } from '@/hooks/useShortcut';
-import { Search } from 'lucide-react';
-import { useRef } from 'react';
+import type { TickerData } from '@/services/market';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 
-export const Header = () => {
+interface HeaderProps {
+  onUpdateSearch?: (query: string) => void;
+  onTickerSelect?: (ticker: TickerData) => void;
+}
+
+export const Header = ({ onUpdateSearch, onTickerSelect }: HeaderProps) => {
   const navigate = useNavigate();
 
   const isLoggedIn = true; // Giả sử trạng thái đăng nhập được xác định ở đây
 
-  const searchRef = useRef<HTMLInputElement>(null);
-
   useShortcut(['ctrl', 'k'], () => {
-    searchRef.current?.focus();
+    // Focus sẽ được xử lý bởi MarketSearchBar
   });
 
   useShortcut(['ctrl', 'q'], () => {
@@ -78,32 +80,11 @@ export const Header = () => {
           >
             Markets
           </NavLink>
-          <NavLink
-            to='/markets/news'
-            className={({ isActive }) =>
-              isActive
-                ? buttonVariants({ variant: 'secondary', className: 'hover:bg-secondary!' })
-                : buttonVariants({ variant: 'ghost' })
-            }
-          >
-            News
-          </NavLink>
         </nav>
       </div>
       {/* Search */}
       <div className='flex max-w-xl flex-1 justify-center'>
-        <InputGroup className='w-full'>
-          <InputGroupInput placeholder='Search...' ref={searchRef} />
-          <InputGroupAddon>
-            <Search />
-          </InputGroupAddon>
-          {/* <InputGroupAddon align='inline-end'>12 results</InputGroupAddon> */}
-          <InputGroupAddon align='inline-end'>
-            <span className='bg-muted text-muted-foreground rounded border px-1.5 py-0.5 font-mono text-xs font-medium'>
-              ⌘K
-            </span>
-          </InputGroupAddon>
-        </InputGroup>
+        <MarketSearchBar onViewAll={onUpdateSearch} onTickerSelect={onTickerSelect} />
       </div>
       {/* User Account and Mode Toggle */}
       <div className='flex shrink-0 items-center gap-1'>
