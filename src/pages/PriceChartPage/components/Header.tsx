@@ -1,4 +1,5 @@
 import { ModeToggle } from '@/components/ModeToggle';
+import { SymbolSelector } from '@/components/SymbolSelector';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { buttonVariants } from '@/components/ui/button';
 import {
@@ -12,10 +13,10 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { useShortcut } from '@/hooks/useShortcut';
-import { getIconUrl, type TickerData } from '@/services/market';
+import { type TickerData } from '@/services/market';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Separator } from '@/components/ui/separator';
-import { ArrowDownRight, ArrowUpRight, ChevronDown, TrendingDown, TrendingUp } from 'lucide-react';
+import { ArrowDownRight, ArrowUpRight, TrendingDown, TrendingUp } from 'lucide-react';
 import { formatCompactNumber, formatCurrency } from '@/lib/utils';
 import { useEffect } from 'react';
 
@@ -91,59 +92,47 @@ export const Header = ({ ticker, priceDirection }: HeaderProps) => {
           <Separator orientation='vertical' className='mx-4 !h-6' />
 
           {/* Symbol Switcher */}
-          <div>
-            <div className='group flex cursor-pointer items-center gap-3'>
-              <div className='flex items-center gap-2'>
-                <img src={getIconUrl(tickerSymbol!)} alt={tickerSymbol} className='h-8 w-8' />
-                <h2 className='text-base font-bold'>
-                  {baseAsset}/{baseQuote}
-                </h2>
-                <ChevronDown className='h-4 w-4 text-gray-400' />
-              </div>
-              {ticker && (
-                <>
-                  <Separator orientation='vertical' className='!h-6' />
-                  <div className='flex min-w-[120px] flex-col'>
-                    <div className='flex items-center gap-2'>
-                      <span
-                        className={`origin-left transform font-mono text-xl font-black transition-all duration-200 ${
-                          priceDirection === 'up'
-                            ? 'scale-110 text-emerald-400 drop-shadow-[0_0_12px_rgba(52,211,153,0.8)]'
-                            : priceDirection === 'down'
-                              ? 'scale-110 text-red-500 drop-shadow-[0_0_15px_rgba(239,68,68,1)]'
-                              : parseFloat(ticker.priceChangePercent) >= 0
-                                ? 'text-emerald-400'
-                                : 'text-red-500'
-                        }`}
-                      >
-                        {formatCurrency(ticker.lastPrice)}
-                      </span>
-                      {priceDirection === 'up' && (
-                        <TrendingUp className='ml-2 h-5 w-5 animate-pulse text-emerald-400' />
-                      )}
-                      {priceDirection === 'down' && (
-                        <TrendingDown className='ml-2 h-5 w-5 animate-pulse text-red-500' />
-                      )}
-                    </div>
-                    <div className='flex items-center gap-1'>
-                      {parseFloat(ticker.priceChangePercent) >= 0 ? (
-                        <ArrowUpRight className='h-3 w-3 text-emerald-500' />
-                      ) : (
-                        <ArrowDownRight className='h-3 w-3 text-red-500' />
-                      )}
-                      <span
-                        className={`text-xs font-black ${
-                          parseFloat(ticker.priceChangePercent) >= 0 ? 'text-emerald-500' : 'text-red-500'
-                        }`}
-                      >
-                        {parseFloat(ticker.priceChangePercent) > 0 ? '+' : ''}
-                        {ticker.priceChangePercent}%
-                      </span>
-                    </div>
+          <div className='flex items-center gap-3'>
+            <SymbolSelector currentSymbol={tickerSymbol!} baseAsset={baseAsset} />
+            {ticker && (
+              <>
+                <Separator orientation='vertical' className='!h-6' />
+                <div className='flex min-w-[120px] flex-col'>
+                  <div className='flex items-center gap-2'>
+                    <span
+                      className={`origin-left transform font-mono text-xl font-black transition-all duration-200 ${
+                        priceDirection === 'up'
+                          ? 'scale-110 text-emerald-400 drop-shadow-[0_0_12px_rgba(52,211,153,0.8)]'
+                          : priceDirection === 'down'
+                            ? 'scale-110 text-red-500 drop-shadow-[0_0_15px_rgba(239,68,68,1)]'
+                            : parseFloat(ticker.priceChangePercent) >= 0
+                              ? 'text-emerald-400'
+                              : 'text-red-500'
+                      }`}
+                    >
+                      {formatCurrency(ticker.lastPrice)}
+                    </span>
+                    {priceDirection === 'up' && <TrendingUp className='ml-2 h-5 w-5 animate-pulse text-emerald-400' />}
+                    {priceDirection === 'down' && <TrendingDown className='ml-2 h-5 w-5 animate-pulse text-red-500' />}
                   </div>
-                </>
-              )}
-            </div>
+                  <div className='flex items-center gap-1'>
+                    {parseFloat(ticker.priceChangePercent) >= 0 ? (
+                      <ArrowUpRight className='h-3 w-3 text-emerald-500' />
+                    ) : (
+                      <ArrowDownRight className='h-3 w-3 text-red-500' />
+                    )}
+                    <span
+                      className={`text-xs font-black ${
+                        parseFloat(ticker.priceChangePercent) >= 0 ? 'text-emerald-500' : 'text-red-500'
+                      }`}
+                    >
+                      {parseFloat(ticker.priceChangePercent) > 0 ? '+' : ''}
+                      {ticker.priceChangePercent}%
+                    </span>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
