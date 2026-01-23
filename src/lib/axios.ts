@@ -25,7 +25,7 @@ class ApiClient {
     // Request interceptor
     this.instance.interceptors.request.use(
       (config: RequestConfig) => {
-        const token = localStorage.getItem('accessToken');
+        const token = localStorage.getItem('token');
         if (token && config.headers) {
           config.headers.Authorization = `Bearer ${token}`;
         }

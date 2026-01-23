@@ -356,7 +356,7 @@ export const OverviewPage = () => {
                 <span className='text-[9px] font-black tracking-widest uppercase'>Total Assets</span>
                 <span className='text-sm font-black'>{filteredAndSortedData.length}</span>
               </div>
-              <Separator orientation='vertical' className='!h-8' />
+              <Separator orientation='vertical' className='h-8' />
               <div className='flex flex-col'>
                 <span className='text-[9px] font-black tracking-widest uppercase'>Page</span>
                 <span className='text-sm font-black'>
