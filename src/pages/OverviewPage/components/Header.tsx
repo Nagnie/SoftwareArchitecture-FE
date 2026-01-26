@@ -15,6 +15,7 @@ import {
 import { useShortcut } from '@/hooks/useShortcut';
 import type { TickerData } from '@/services/market';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/context/AuthContext';
 
 interface HeaderProps {
   onUpdateSearch?: (query: string) => void;
@@ -23,26 +24,26 @@ interface HeaderProps {
 
 export const Header = ({ onUpdateSearch, onTickerSelect }: HeaderProps) => {
   const navigate = useNavigate();
-
-  const isLoggedIn = true; // Giả sử trạng thái đăng nhập được xác định ở đây
+  const { user, isAuthenticated, logout, isAdmin } = useAuth();
 
   useShortcut(['ctrl', 'k'], () => {
     // Focus sẽ được xử lý bởi MarketSearchBar
   });
 
   useShortcut(['ctrl', 'q'], () => {
-    if (isLoggedIn) {
-      navigate('/login');
+    if (isAuthenticated) {
+      handleLogout();
     }
   });
 
   useShortcut(['ctrl', 'p'], () => {
-    if (isLoggedIn) {
+    if (isAuthenticated) {
       navigate('/profile');
     }
   });
 
   const handleLogout = () => {
+    logout();
     navigate('/login');
   };
 
@@ -62,7 +63,7 @@ export const Header = ({ onUpdateSearch, onTickerSelect }: HeaderProps) => {
           <div>
             <h1 className='text-lg leading-none font-bold tracking-tight text-slate-900 dark:text-white'>
               Crypto
-              <span className='bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent'>
+              <span className='bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent'>
                 AI
               </span>
             </h1>
@@ -88,16 +89,18 @@ export const Header = ({ onUpdateSearch, onTickerSelect }: HeaderProps) => {
       </div>
       {/* User Account and Mode Toggle */}
       <div className='flex shrink-0 items-center gap-1'>
-        {isLoggedIn ? (
+        {isAuthenticated && user ? (
           <>
             <DropdownMenu>
               <DropdownMenuTrigger asChild className='outline-none'>
                 <Link to='/' className='flex items-center gap-3 rounded-lg p-1'>
                   <div className='flex flex-col items-end sm:flex'>
-                    <span className='text-sm leading-none font-medium'>Alex Trader</span>
-                    <span className='text-primary mt-1 text-xs font-medium'>Pro Plan</span>
+                    <span className='text-sm leading-none font-medium'>{user.fullName}</span>
+                    <span className='text-primary mt-1 text-xs font-medium'>
+                      {user.vipExpiryDate ? 'VIP Plan' : 'Regular Plan'}
+                    </span>
                   </div>
-                  <div className='size-9 rounded-full border-1 bg-cover bg-center shadow-sm'>
+                  <div className='size-9 rounded-full border bg-cover bg-center shadow-sm'>
                     <Avatar>
                       <AvatarImage src='https://api.dicebear.com/9.x/adventurer/svg?seed=Liliana' />
                       <AvatarFallback>CN</AvatarFallback>
@@ -108,14 +111,19 @@ export const Header = ({ onUpdateSearch, onTickerSelect }: HeaderProps) => {
               <DropdownMenuContent className='w-40' align='start'>
                 <DropdownMenuGroup>
                   <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                  <DropdownMenuItem className='cursor-pointer' onClick={() => handleProfile()}>
+                  <DropdownMenuItem className='cursor-pointer' onClick={handleProfile}>
                     Profile
                     <DropdownMenuShortcut>⌘P</DropdownMenuShortcut>
                   </DropdownMenuItem>
+                  {isAdmin && (
+                    <DropdownMenuItem className='cursor-pointer' onClick={() => navigate('/admin')}>
+                      Admin Panel
+                    </DropdownMenuItem>
+                  )}
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
-                  <DropdownMenuItem className='cursor-pointer' onClick={() => handleLogout()}>
+                  <DropdownMenuItem className='cursor-pointer' onClick={handleLogout}>
                     Log out
                     <DropdownMenuShortcut>⌘Q</DropdownMenuShortcut>
                   </DropdownMenuItem>

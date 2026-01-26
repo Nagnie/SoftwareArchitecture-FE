@@ -4,6 +4,9 @@ import LoginPage from '@/pages/LoginPage';
 import SignupPage from '@/pages/SignupPage';
 import ProfilePage from '@/pages/ProfilePage';
 import { PriceChartPage } from '@/pages/PriceChartPage';
+import AdminPage from '@/pages/AdminPage';
+import ProtectedRoute from '@/components/ProtectedRoute';
+import AdminRoute from '@/components/AdminRoute';
 
 export const routeConfig: RouteObject[] = [
   // Public Routes
@@ -43,7 +46,22 @@ export const routeConfig: RouteObject[] = [
   },
   // Protected Routes
   {
-    path: 'profile',
-    element: <ProfilePage />
+    element: <ProtectedRoute />,
+    children: [
+      {
+        path: 'profile',
+        element: <ProfilePage />
+      }
+    ]
+  },
+  // Admin Routes
+  {
+    element: <AdminRoute />,
+    children: [
+      {
+        path: 'admin',
+        element: <AdminPage />
+      }
+    ]
   }
 ];
