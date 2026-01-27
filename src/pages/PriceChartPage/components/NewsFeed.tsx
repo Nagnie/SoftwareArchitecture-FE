@@ -24,12 +24,12 @@ export const NewsFeed = ({ symbol }: NewsFeedProps) => {
       {/* Error State */}
       {error && (
         <div className='flex items-start gap-2 rounded-lg border border-red-500/20 bg-red-500/10 p-3'>
-          <AlertCircle className='mt-0.5 h-4 w-4 flex-shrink-0 text-red-500' />
+          <AlertCircle className='mt-0.5 h-4 w-4 shrink-0 text-red-500' />
           <div className='min-w-0 flex-1'>
             <p className='text-xs font-medium text-red-700 dark:text-red-400'>Failed to load news</p>
             <p className='mt-1 text-xs text-red-600 dark:text-red-300'>{error}</p>
           </div>
-          <Button size='sm' variant='outline' onClick={retry} className='h-7 flex-shrink-0 text-xs'>
+          <Button size='sm' variant='outline' onClick={retry} className='h-7 shrink-0 text-xs'>
             Retry
           </Button>
         </div>
@@ -38,7 +38,7 @@ export const NewsFeed = ({ symbol }: NewsFeedProps) => {
       {/* News Items - No internal scroll, let parent container handle it */}
       <div className='flex flex-col gap-3'>
         {news.length === 0 && !isLoading && !error && (
-          <div className='flex h-[200px] items-center justify-center rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/50'>
+          <div className='flex h-50 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/50'>
             <div className='text-center'>
               <p className='text-sm font-medium text-slate-600 dark:text-slate-300'>No news available</p>
             </div>

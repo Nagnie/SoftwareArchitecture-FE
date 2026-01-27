@@ -52,7 +52,7 @@ export const Header = ({ onUpdateSearch, onTickerSelect }: HeaderProps) => {
   };
 
   return (
-    <header className='z-30 flex h-16 shrink-0 items-center justify-between gap-4 border-b px-12'>
+    <header className='z-30 flex h-16 shrink-0 items-center justify-between gap-4 border-b px-6'>
       {/* Logo and Nav */}
       <div className='flex shrink-0 items-center gap-8'>
         {/* Logo */}

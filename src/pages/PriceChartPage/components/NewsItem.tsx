@@ -19,13 +19,13 @@ export const NewsItem = ({ news }: NewsItemProps) => {
             <span className='text-[10px] font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400'>
               {news.source}
             </span>
-            <h4 className='mt-1 line-clamp-2 text-sm font-bold break-words'>{news.title}</h4>
+            <h4 className='mt-1 line-clamp-2 text-sm font-bold wwrap-break-words'>{news.title}</h4>
           </div>
           <a
             href={news.url}
             target='_blank'
             rel='noopener noreferrer'
-            className='flex-shrink-0 text-slate-400 transition-colors hover:text-slate-600 dark:hover:text-slate-300'
+            className='shrink-0 text-slate-400 transition-colors hover:text-slate-600 dark:hover:text-slate-300'
             title='Open article'
           >
             <ExternalLink className='h-4 w-4' />
@@ -53,7 +53,7 @@ export const NewsItem = ({ news }: NewsItemProps) => {
               <span className='text-[10px] text-slate-400'>+{news.tags.length - 3} more</span>
             )}
           </div>
-          <span className='flex-shrink-0 text-[10px] text-slate-500 dark:text-slate-400'>{timeAgo}</span>
+          <span className='shrink-0 text-[10px] text-slate-500 dark:text-slate-400'>{timeAgo}</span>
         </div>
       </CardContent>
     </Card>

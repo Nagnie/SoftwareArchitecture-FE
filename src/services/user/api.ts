@@ -8,8 +8,9 @@ import type {
   UpdateUserRequest,
   ChangePasswordRequest
 } from './type';
+import { envConfig } from '@/config/envConfig';
 
-const BASE_URL = 'http://localhost:8080/api';
+const BASE_URL = envConfig.USER_SERVICE_API_URL || 'http://localhost:8080/api';
 
 const userApi = axios.create({
   baseURL: BASE_URL,

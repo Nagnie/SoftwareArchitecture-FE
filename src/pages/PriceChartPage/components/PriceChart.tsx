@@ -213,7 +213,7 @@ export const PriceChart = ({ data, symbol, interval }: PriceChartProps) => {
           <div className={`ml-2 ${colors.legendLabel}`}>{legendData.time}</div>
         </div>
       )}
-      <div ref={chartContainerRef} className='h-[400px] w-full' />
+      <div ref={chartContainerRef} className='h-100 w-full' />
     </div>
   );
 };
