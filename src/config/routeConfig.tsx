@@ -7,60 +7,62 @@ import { PriceChartPage } from '@/pages/PriceChartPage';
 import AdminPage from '@/pages/AdminPage';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import AdminRoute from '@/components/AdminRoute';
+import { MainLayout } from '@/components/layouts/MainLayout';
 
 export const routeConfig: RouteObject[] = [
-  // Public Routes
+  // Public Routes without layout
   {
-    path: '/',
-    element: <Navigate to='markets' replace />
+    path: 'login',
+    element: <LoginPage />
   },
   {
-    path: '/',
+    path: 'signup',
+    element: <SignupPage />
+  },
+  // Routes with MainLayout
+  {
+    element: <MainLayout />,
     children: [
       {
-        path: 'login',
-        element: <LoginPage />
+        path: '/',
+        element: <Navigate to='markets' replace />
       },
       {
-        path: 'signup',
-        element: <SignupPage />
-      }
-    ]
-  },
-  {
-    path: 'markets',
-    children: [
-      {
-        index: true,
-        element: <Navigate to='overview' replace />
+        path: 'markets',
+        children: [
+          {
+            index: true,
+            element: <Navigate to='overview' replace />
+          },
+          {
+            path: 'overview',
+            element: <OverviewPage />
+          },
+          {
+            path: 'price-chart/:baseAsset/:tickerSymbol',
+            element: <PriceChartPage />
+          }
+        ]
       },
+      // Protected Routes
       {
-        path: 'overview',
-        element: <OverviewPage />
+        element: <ProtectedRoute />,
+        children: [
+          {
+            path: 'profile',
+            element: <ProfilePage />
+          }
+        ]
       },
+      // Admin Routes
       {
-        path: 'price-chart/:baseAsset/:tickerSymbol',
-        element: <PriceChartPage />
-      }
-    ]
-  },
-  // Protected Routes
-  {
-    element: <ProtectedRoute />,
-    children: [
-      {
-        path: 'profile',
-        element: <ProfilePage />
-      }
-    ]
-  },
-  // Admin Routes
-  {
-    element: <AdminRoute />,
-    children: [
-      {
-        path: 'admin',
-        element: <AdminPage />
+        element: <AdminRoute />,
+        children: [
+          {
+            path: 'admin',
+            element: <AdminPage />
+          }
+        ]
       }
     ]
   }

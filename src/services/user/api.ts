@@ -1,5 +1,13 @@
 import axios from 'axios';
-import type { LoginRequest, RegisterRequest, AuthResponse, User, ApiResponse } from './type';
+import type {
+  LoginRequest,
+  RegisterRequest,
+  AuthResponse,
+  User,
+  ApiResponse,
+  UpdateUserRequest,
+  ChangePasswordRequest
+} from './type';
 
 const BASE_URL = 'http://localhost:8080/api';
 
@@ -52,6 +60,21 @@ export const upgradeToVip = async (userId: number, months: number) => {
 
 export const downgradeUser = async (userId: number) => {
   const response = await userApi.post(`/users/${userId}/downgrade`);
+  return response.data;
+};
+
+export const updateCurrentUser = async (data: UpdateUserRequest) => {
+  const response = await userApi.put<ApiResponse<User>>('/users/me', data);
+  return response.data.data;
+};
+
+export const changePassword = async (data: ChangePasswordRequest) => {
+  const response = await userApi.put<ApiResponse<string>>('/users/me/password', data);
+  return response.data;
+};
+
+export const deleteAccount = async () => {
+  const response = await userApi.delete<ApiResponse<string>>('/users/me');
   return response.data;
 };
 
