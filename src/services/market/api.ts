@@ -5,20 +5,19 @@ import type { Candle, MarketServiceApiResponse, TickerData } from '@/services/ma
 const BASE_URL = envConfig.MARKET_API_URL || 'http://localhost:3001/api/v1/market';
 
 const axios = apiClient.getClient();
-axios.defaults.baseURL = BASE_URL;
 
 export const getIconUrl = (symbol: string): string => {
   return `${BASE_URL}/icon/${symbol}`;
 };
 
 export const getAllTickers = async (signal?: AbortSignal) => {
-  const response = await axios.get<MarketServiceApiResponse<TickerData[]>>('/tickers', { signal });
+  const response = await axios.get<MarketServiceApiResponse<TickerData[]>>(`${BASE_URL}/tickers`, { signal });
 
   return response.data.data || [];
 };
 
 export const get24hrTicker = async (symbol: string, signal?: AbortSignal) => {
-  const response = await axios.get<MarketServiceApiResponse<TickerData>>(`/ticker/${symbol}`, { signal });
+  const response = await axios.get<MarketServiceApiResponse<TickerData>>(`${BASE_URL}/ticker/${symbol}`, { signal });
 
   return response.data.data;
 };
@@ -29,7 +28,7 @@ export const getHistoryCandles = async (
   limit: number = 1000,
   signal?: AbortSignal
 ) => {
-  const response = await axios.get<MarketServiceApiResponse<Candle[]>>(`/candles/${symbol}`, {
+  const response = await axios.get<MarketServiceApiResponse<Candle[]>>(`${BASE_URL}/candles/${symbol}`, {
     params: { interval, limit },
     signal
   });
@@ -38,7 +37,7 @@ export const getHistoryCandles = async (
 };
 
 export const getSymbols = async (signal?: AbortSignal): Promise<string[]> => {
-  const response = await axios.get<MarketServiceApiResponse<string[]>>('/symbols', { signal });
+  const response = await axios.get<MarketServiceApiResponse<string[]>>(`${BASE_URL}/symbols`, { signal });
 
   return response.data.data || [];
 };
