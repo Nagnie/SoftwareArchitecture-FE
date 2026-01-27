@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Header } from '@/pages/PriceChartPage/components/Header';
 import { PriceChart } from '@/pages/PriceChartPage/components/PriceChart';
+import { NewsFeed } from '@/pages/PriceChartPage/components/NewsFeed';
 import { get24hrTicker, getHistoryCandles, type Candle, type TickerData } from '@/services/market';
 import { websocketService } from '@/services/market/socket';
 import { ArrowUpRight, BrainCircuit, Clock, Lock } from 'lucide-react';
@@ -205,12 +206,15 @@ export const PriceChartPage = () => {
                 <BrainCircuit />
                 AI Insights
               </h2>
+              <Button variant='ghost' size='sm' onClick={() => setShowAnalysis(!showAnalysis)} className='h-8 text-xs'>
+                {showAnalysis ? 'Hide' : 'Show'} Analysis
+              </Button>
             </div>
             {/* Prediction Card */}
             <div>
               <Card className='gap-0 py-4'>
                 <CardHeader className='px-4'>
-                  <div className='mb-4 flex items-start justify-between'>
+                  <div className='flex items-start justify-between'>
                     <div>
                       <p className='text-muted-foreground mb-1 text-xs font-medium tracking-wider uppercase'>
                         Trend Prediction
@@ -230,7 +234,7 @@ export const PriceChartPage = () => {
                   </div>
                 </CardHeader>
                 <CardContent className='px-4'>
-                  <div className='bg-accent mb-3 rounded-lg p-3'>
+                  <div className='bg-accent rounded-lg p-3'>
                     <div className='text-accent-foreground mb-1 flex justify-between text-xs'>
                       <span>Fear</span>
                       <span className='font-bold'>Greed (68)</span>
@@ -245,19 +249,11 @@ export const PriceChartPage = () => {
               </Card>
             </div>
             {/* The "Why" Section (Causal Analysis) */}
-            <div className='flex flex-col gap-2'>
-              <div className='flex items-center justify-between'>
-                <h3 className='text-sm font-bold'>Causal Analysis</h3>
-                <Button
-                  variant='ghost'
-                  size='sm'
-                  onClick={() => setShowAnalysis(!showAnalysis)}
-                  className='h-8 text-xs'
-                >
-                  {showAnalysis ? 'Hide' : 'Show'} Analysis
-                </Button>
-              </div>
-              {showAnalysis && (
+            {showAnalysis && (
+              <div className='flex flex-col gap-2'>
+                <div className='flex items-center justify-between'>
+                  <h3 className='text-sm font-bold'>Causal Analysis</h3>
+                </div>
                 <Card className='py-4'>
                   <CardContent className='relative px-4'>
                     <p className='text-sm leading-relaxed text-gray-600 dark:text-gray-300'>
@@ -279,48 +275,11 @@ export const PriceChartPage = () => {
                     </div>
                   </CardContent>
                 </Card>
-              )}
-            </div>
+              </div>
+            )}
             <Separator />
             {/* News Feed */}
-            <div className='flex flex-col gap-3'>
-              {/* Header */}
-              <div className='flex items-center justify-between'>
-                <h3 className='text-sm font-bold'>Smart News Feed</h3>
-                <button className='text-primary text-xs hover:underline'>View All</button>
-              </div>
-              {/* News Items */}
-              <Card className='gap-2 py-4'>
-                <CardHeader className='px-4'>
-                  <span className='text-[10px] font-semibold tracking-wider uppercase'>
-                    cryptonews.com • 2024-03-24
-                  </span>
-                  <h4 className='mt-1 text-sm font-bold'>Bitcoin Breaks Above $42K Amidst Market Optimism</h4>
-                </CardHeader>
-                <CardContent className='px-4'>
-                  <p className='line-clamp-2 text-sm text-gray-600 dark:text-gray-300'>
-                    Bitcoin surged past the $42,000 mark today, driven by renewed investor confidence and positive
-                    developments in the regulatory landscape. Analysts attribute the rally to increased institutional
-                    interest and favorable on-chain metrics...
-                  </p>
-                </CardContent>
-              </Card>
-              <Card className='gap-2 py-4'>
-                <CardHeader className='px-4'>
-                  <span className='text-[10px] font-semibold tracking-wider uppercase'>
-                    cryptonews.com • 2024-03-24
-                  </span>
-                  <h4 className='mt-1 text-sm font-bold'>Bitcoin Breaks Above $42K Amidst Market Optimism</h4>
-                </CardHeader>
-                <CardContent className='px-4'>
-                  <p className='line-clamp-2 text-sm text-gray-600 dark:text-gray-300'>
-                    Bitcoin surged past the $42,000 mark today, driven by renewed investor confidence and positive
-                    developments in the regulatory landscape. Analysts attribute the rally to increased institutional
-                    interest and favorable on-chain metrics...
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
+            <NewsFeed symbol={symbol} />
           </div>
         </div>
       </main>
