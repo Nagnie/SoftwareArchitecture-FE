@@ -6,7 +6,7 @@ import { PriceChart } from '@/pages/PriceChartPage/components/PriceChart';
 import { NewsFeed } from '@/pages/PriceChartPage/components/NewsFeed';
 import { get24hrTicker, getHistoryCandles, type Candle, type TickerData } from '@/services/market';
 import { websocketService } from '@/services/market/socket';
-import { ArrowUpRight, BrainCircuit, Clock, Lock } from 'lucide-react';
+import { ArrowUpRight, BrainCircuit, ChevronUp, Clock, Lock } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
@@ -33,6 +33,35 @@ export const PriceChartPage = () => {
   const prevPriceRef = useRef<number>(0);
   const flashTimerRef = useRef<number | null>(null);
   const [showAnalysis, setShowAnalysis] = useState(false);
+
+  // AI Insights collapse state
+  const [isAICollapsed, setIsAICollapsed] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const aiInsightsRef = useRef<HTMLDivElement>(null);
+
+  // Effect to handle AI Insights auto-collapse on scroll
+  useEffect(() => {
+    const scrollContainer = scrollContainerRef.current;
+    const aiInsights = aiInsightsRef.current;
+
+    if (!scrollContainer || !aiInsights) return;
+
+    const handleScroll = () => {
+      const scrollTop = scrollContainer.scrollTop;
+      const aiHeight = aiInsights.offsetHeight;
+
+      // Collapse khi scroll vượt quá 30% chiều cao của AI section
+      const shouldCollapse = scrollTop > aiHeight * 0.3;
+
+      setIsAICollapsed(shouldCollapse);
+    };
+
+    scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+
+    return () => {
+      scrollContainer.removeEventListener('scroll', handleScroll);
+    };
+  }, [showAnalysis]); // Re-run khi showAnalysis thay đổi vì nó ảnh hưởng đến chiều cao
 
   // Effect to handle price flashing
   useEffect(() => {
@@ -155,8 +184,14 @@ export const PriceChartPage = () => {
     };
   }, [interval, symbol]);
 
+  const scrollToTop = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   return (
-    <div>
+    <div className='flex h-full flex-col'>
       <Header priceDirection={priceDirection} ticker={ticker} />
 
       <main className='flex-1 space-y-8 overflow-y-auto p-4 lg:p-8'>
@@ -198,88 +233,134 @@ export const PriceChartPage = () => {
               )}
             </div>
           </div>
-          {/* News And AI */}
-          <div className='flex flex-col gap-6 p-5 pt-0'>
-            {/* Header */}
-            <div className='flex items-center justify-between'>
-              <h2 className='flex items-center gap-2 text-lg font-bold'>
-                <BrainCircuit />
-                AI Insights
-              </h2>
-              <Button variant='ghost' size='sm' onClick={() => setShowAnalysis(!showAnalysis)} className='h-8 text-xs'>
-                {showAnalysis ? 'Hide' : 'Show'} Analysis
-              </Button>
-            </div>
-            {/* Prediction Card */}
-            <div>
-              <Card className='gap-0 py-4'>
-                <CardHeader className='px-4'>
-                  <div className='flex items-start justify-between'>
-                    <div>
-                      <p className='text-muted-foreground mb-1 text-xs font-medium tracking-wider uppercase'>
-                        Trend Prediction
-                      </p>
-                      <h3 className='flex items-center gap-2 text-2xl font-bold text-[#26a69a]'>
-                        BULLISH
-                        {/* <span className='material-symbols-outlined text-2xl'>arrow_upward</span> */}
-                        <ArrowUpRight className='h-6 w-6 text-[#26a69a]' />
-                      </h3>
-                    </div>
-                    <div className='text-right'>
-                      <p className='text-muted-foreground mb-1 text-xs font-medium tracking-wider uppercase'>
-                        Confidence
-                      </p>
-                      <p className='text-xl font-bold text-white'>85%</p>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className='px-4'>
-                  <div className='bg-accent rounded-lg p-3'>
-                    <div className='text-accent-foreground mb-1 flex justify-between text-xs'>
-                      <span>Fear</span>
-                      <span className='font-bold'>Greed (68)</span>
-                    </div>
-                    <div className='h-2 w-full overflow-hidden rounded-full bg-gray-700'>
-                      <div className='relative h-full w-[68%] rounded-full bg-gradient-to-r from-red-500 via-yellow-500 to-green-500'>
-                        <div className='absolute top-0 right-0 bottom-0 w-1 bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)]'></div>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-            {/* The "Why" Section (Causal Analysis) */}
-            {showAnalysis && (
-              <div className='flex flex-col gap-2'>
-                <div className='flex items-center justify-between'>
-                  <h3 className='text-sm font-bold'>Causal Analysis</h3>
+
+          {/* News And AI - Single scrollable container */}
+          <div className='flex flex-col overflow-hidden lg:h-[calc(100vh-12rem)]'>
+            <div
+              ref={scrollContainerRef}
+              className='scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-700 scrollbar-track-transparent flex flex-col gap-6 overflow-x-hidden overflow-y-auto p-5 pt-0 pb-8 lg:pr-3'
+            >
+              {/* AI Insights Section with smooth collapse */}
+              <div
+                ref={aiInsightsRef}
+                className={`flex-shrink-0 overflow-hidden transition-all duration-500 ease-in-out ${
+                  isAICollapsed
+                    ? 'lg:pointer-events-none lg:max-h-0 lg:scale-95 lg:opacity-0'
+                    : 'lg:max-h-[2000px] lg:scale-100 lg:opacity-100'
+                }`}
+              >
+                {/* Header */}
+                <div className='mb-6 flex items-center justify-between'>
+                  <h2 className='flex items-center gap-2 text-lg font-bold'>
+                    <BrainCircuit />
+                    AI Insights
+                  </h2>
+                  <Button
+                    variant='ghost'
+                    size='sm'
+                    onClick={() => setShowAnalysis(!showAnalysis)}
+                    className='h-8 text-xs'
+                  >
+                    {showAnalysis ? 'Hide' : 'Show'} Analysis
+                  </Button>
                 </div>
-                <Card className='py-4'>
-                  <CardContent className='relative px-4'>
-                    <p className='text-sm leading-relaxed text-gray-600 dark:text-gray-300'>
-                      On-chain data indicates significant whale accumulation in the $41.8k - $42.2k zone over the last 4
-                      hours. Combined with the recent SEC clarity on ETF filings...
-                    </p>
-                    {/* VIP Blurring */}
-                    <div className='mt-2 text-sm leading-relaxed text-gray-600 opacity-50 blur-[3px] select-none dark:text-gray-300'>
-                      Furthermore, the RSI divergence on the 4H chart suggests a weakening of bearish momentum. Our NLP
-                      models parsed 15,000 tweets and found a 30% spike in positive sentiment keywords related to
-                      institutional adoption.
+
+                {/* Prediction Card */}
+                <div className='mb-6'>
+                  <Card className='gap-0 py-4'>
+                    <CardHeader className='px-4'>
+                      <div className='flex items-start justify-between'>
+                        <div>
+                          <p className='text-muted-foreground mb-1 text-xs font-medium tracking-wider uppercase'>
+                            Trend Prediction
+                          </p>
+                          <h3 className='flex items-center gap-2 text-2xl font-bold text-[#26a69a]'>
+                            BULLISH
+                            <ArrowUpRight className='h-6 w-6 text-[#26a69a]' />
+                          </h3>
+                        </div>
+                        <div className='text-right'>
+                          <p className='text-muted-foreground mb-1 text-xs font-medium tracking-wider uppercase'>
+                            Confidence
+                          </p>
+                          <p className='text-xl font-bold text-white'>85%</p>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className='px-4'>
+                      <div className='bg-accent rounded-lg p-3'>
+                        <div className='text-accent-foreground mb-1 flex justify-between text-xs'>
+                          <span>Fear</span>
+                          <span className='font-bold'>Greed (68)</span>
+                        </div>
+                        <div className='h-2 w-full overflow-hidden rounded-full bg-gray-700'>
+                          <div className='relative h-full w-[68%] rounded-full bg-gradient-to-r from-red-500 via-yellow-500 to-green-500'>
+                            <div className='absolute top-0 right-0 bottom-0 w-1 bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)]'></div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* The "Why" Section (Causal Analysis) */}
+                {showAnalysis && (
+                  <div className='mb-6 flex flex-col gap-2'>
+                    <div className='flex items-center justify-between'>
+                      <h3 className='text-sm font-bold'>Causal Analysis</h3>
                     </div>
-                    {/* Unlock CTA */}
-                    <div className='absolute inset-0 flex items-center justify-center bg-white/10 backdrop-blur-[1px] dark:bg-black/10'>
-                      <Button>
-                        <Lock className='h-4 w-4' />
-                        Unlock Full Reasoning
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                    <Card className='py-4'>
+                      <CardContent className='relative px-4'>
+                        <p className='text-sm leading-relaxed text-gray-600 dark:text-gray-300'>
+                          On-chain data indicates significant whale accumulation in the $41.8k - $42.2k zone over the
+                          last 4 hours. Combined with the recent SEC clarity on ETF filings...
+                        </p>
+                        {/* VIP Blurring */}
+                        <div className='mt-2 text-sm leading-relaxed text-gray-600 opacity-50 blur-[3px] select-none dark:text-gray-300'>
+                          Furthermore, the RSI divergence on the 4H chart suggests a weakening of bearish momentum. Our
+                          NLP models parsed 15,000 tweets and found a 30% spike in positive sentiment keywords related
+                          to institutional adoption.
+                        </div>
+                        {/* Unlock CTA */}
+                        <div className='absolute inset-0 flex items-center justify-center bg-white/10 backdrop-blur-[1px] dark:bg-black/10'>
+                          <Button>
+                            <Lock className='h-4 w-4' />
+                            Unlock Full Reasoning
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+
+                <Separator />
               </div>
-            )}
-            <Separator />
-            {/* News Feed */}
-            <NewsFeed symbol={symbol} />
+
+              {/* Collapse indicator - Sticky at top when collapsed */}
+              {isAICollapsed && (
+                <div
+                  className={`bg-background/80 sticky top-0 z-10 flex items-center justify-center rounded-lg px-5 py-3 backdrop-blur transition-all duration-300 ${
+                    isAICollapsed
+                      ? 'lg:translate-y-0 lg:opacity-100'
+                      : 'lg:pointer-events-none lg:-translate-y-full lg:opacity-0'
+                  }`}
+                >
+                  <button
+                    onClick={scrollToTop}
+                    className='hover:bg-accent flex items-center gap-2 rounded-full px-4 py-2 text-xs font-medium transition-colors'
+                  >
+                    <ChevronUp className='h-4 w-4' />
+                    <span>Scroll up to see AI Insights</span>
+                    <ChevronUp className='h-4 w-4' />
+                  </button>
+                </div>
+              )}
+
+              {/* News Feed - Remove internal scroll, let parent handle it */}
+              <div className='flex-1'>
+                <NewsFeed symbol={symbol} />
+              </div>
+            </div>
           </div>
         </div>
       </main>

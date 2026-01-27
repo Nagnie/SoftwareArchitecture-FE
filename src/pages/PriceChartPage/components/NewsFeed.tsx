@@ -35,8 +35,8 @@ export const NewsFeed = ({ symbol }: NewsFeedProps) => {
         </div>
       )}
 
-      {/* News Items */}
-      <div className='scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-700 scrollbar-track-transparent scrollbar-hidden flex max-h-[600px] flex-col gap-3 overflow-y-auto'>
+      {/* News Items - No internal scroll, let parent container handle it */}
+      <div className='flex flex-col gap-3'>
         {news.length === 0 && !isLoading && !error && (
           <div className='flex h-[200px] items-center justify-center rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/50'>
             <div className='text-center'>
