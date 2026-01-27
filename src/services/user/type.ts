@@ -49,3 +49,14 @@ export interface ApiResponse<T> {
   message: string | null;
   data: T;
 }
+
+export interface UpdateUserRequest {
+  email: string;
+  fullName: string;
+  phoneNumber: string;
+}
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
