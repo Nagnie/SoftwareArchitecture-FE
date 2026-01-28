@@ -136,20 +136,20 @@
     height: 6px;
   }
 
-  .scrollbar-thumb-slate-300::-webkit-scrollbar-thumb {
+  .scrollbar-thumb-neutral-300::-webkit-scrollbar-thumb {
     background-color: oklch(86.9% 0.022 252.894);
     border-radius: 9999px;
   }
 
-  .scrollbar-thumb-slate-300 {
+  .scrollbar-thumb-neutral-300 {
     scrollbar-color: oklch(86.9% 0.022 252.894) transparent; /* Firefox */
   }
 
-  .dark .scrollbar-thumb-slate-700::-webkit-scrollbar-thumb {
+  .dark .scrollbar-thumb-neutral-700::-webkit-scrollbar-thumb {
     background-color: oklch(37.2% 0.044 257.287);
   }
 
-  .dark .scrollbar-thumb-slate-700 {
+  .dark .scrollbar-thumb-neutral-700 {
     scrollbar-color: oklch(37.2% 0.044 257.287) transparent; /* Firefox */
   }
 

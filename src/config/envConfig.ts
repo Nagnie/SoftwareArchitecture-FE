@@ -5,5 +5,6 @@ export const envConfig = {
   MARKET_WS_MAX_RECONNECT_ATTEMPTS: parseInt(import.meta.env.VITE_MARKET_WS_MAX_RECONNECT_ATTEMPTS) || 5,
   MARKET_WS_RECONNECT_DELAY: parseInt(import.meta.env.VITE_MARKET_WS_RECONNECT_DELAY) || 1000,
 
-  NEWS_API_URL: import.meta.env.VITE_NEWS_API_URL as string
+  USER_SERVICE_API_URL: import.meta.env.VITE_USER_API_URL as string,
+  CRAWLER_SERVICE_API_URL: import.meta.env.VITE_CRAWLER_API_URL as string
 };

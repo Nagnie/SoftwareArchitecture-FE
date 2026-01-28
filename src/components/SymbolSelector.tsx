@@ -127,7 +127,7 @@ export const SymbolSelector = ({ currentSymbol, baseAsset }: SymbolSelectorProps
           </div>
         </div>
       </PopoverTrigger>
-      <PopoverContent className='w-[250px] p-0' align='start'>
+      <PopoverContent className='w-62.5 p-0' align='start'>
         <Command>
           <CommandInput
             placeholder='Search symbol...'
@@ -136,7 +136,7 @@ export const SymbolSelector = ({ currentSymbol, baseAsset }: SymbolSelectorProps
             onValueChange={setSearchQuery}
           />
           <CommandEmpty>{loading ? 'Loading...' : 'No symbol found.'}</CommandEmpty>
-          <div onScroll={handleScroll} className='max-h-[300px] overflow-y-auto'>
+          <div onScroll={handleScroll} className='max-h-75 overflow-y-auto'>
             <CommandGroup heading='Available Symbols'>
               {displayedTickers.map((ticker) => (
                 <CommandItem key={ticker.symbol} value={ticker.symbol} onSelect={() => handleSelectSymbol(ticker)}>

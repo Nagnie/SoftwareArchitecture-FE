@@ -29,6 +29,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } catch (error) {
           console.error('Failed to fetch user:', error);
           localStorage.removeItem('token');
+          localStorage.removeItem('userId');
         }
       }
       setIsLoading(false);
@@ -40,6 +41,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (data: LoginRequest) => {
     const response = await authApi.login(data);
     localStorage.setItem('token', response.data.token);
+    localStorage.setItem('userId', response.data.user.id.toString());
     setUser(response.data.user);
   };
 
@@ -50,6 +52,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('userId');
     setUser(null);
   };
 

@@ -35,11 +35,11 @@ export const PriceChart = ({ data, symbol, interval }: PriceChartProps) => {
     borderColor: isDark ? '#334155' : '#cbd5e1',
     upColor: '#26a69a',
     downColor: '#ef5350',
-    legendBg: isDark ? 'bg-slate-900/60' : 'bg-white/80',
-    legendBorder: isDark ? 'border-slate-700/50' : 'border-slate-300/50',
-    legendLabel: isDark ? 'text-slate-500' : 'text-slate-600',
-    chartBg: isDark ? 'bg-slate-900/50' : 'bg-slate-50',
-    chartBorder: isDark ? 'border-slate-800' : 'border-slate-200'
+    legendBg: isDark ? 'bg-neutral-900/60' : 'bg-white/80',
+    legendBorder: isDark ? 'border-neutral-700/50' : 'border-neutral-300/50',
+    legendLabel: isDark ? 'text-neutral-500' : 'text-neutral-600',
+    chartBg: isDark ? 'bg-neutral-900/50' : 'bg-neutral-50',
+    chartBorder: isDark ? 'border-neutral-800' : 'border-neutral-200'
   };
 
   useEffect(() => {
@@ -213,7 +213,7 @@ export const PriceChart = ({ data, symbol, interval }: PriceChartProps) => {
           <div className={`ml-2 ${colors.legendLabel}`}>{legendData.time}</div>
         </div>
       )}
-      <div ref={chartContainerRef} className='h-[400px] w-full' />
+      <div ref={chartContainerRef} className='h-100 w-full' />
     </div>
   );
 };

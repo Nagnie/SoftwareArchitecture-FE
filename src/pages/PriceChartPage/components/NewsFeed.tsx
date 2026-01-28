@@ -24,12 +24,12 @@ export const NewsFeed = ({ symbol }: NewsFeedProps) => {
       {/* Error State */}
       {error && (
         <div className='flex items-start gap-2 rounded-lg border border-red-500/20 bg-red-500/10 p-3'>
-          <AlertCircle className='mt-0.5 h-4 w-4 flex-shrink-0 text-red-500' />
+          <AlertCircle className='mt-0.5 h-4 w-4 shrink-0 text-red-500' />
           <div className='min-w-0 flex-1'>
             <p className='text-xs font-medium text-red-700 dark:text-red-400'>Failed to load news</p>
             <p className='mt-1 text-xs text-red-600 dark:text-red-300'>{error}</p>
           </div>
-          <Button size='sm' variant='outline' onClick={retry} className='h-7 flex-shrink-0 text-xs'>
+          <Button size='sm' variant='outline' onClick={retry} className='h-7 shrink-0 text-xs'>
             Retry
           </Button>
         </div>
@@ -38,9 +38,9 @@ export const NewsFeed = ({ symbol }: NewsFeedProps) => {
       {/* News Items - No internal scroll, let parent container handle it */}
       <div className='flex flex-col gap-3'>
         {news.length === 0 && !isLoading && !error && (
-          <div className='flex h-[200px] items-center justify-center rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/50'>
+          <div className='flex h-50 items-center justify-center rounded-lg border border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900/50'>
             <div className='text-center'>
-              <p className='text-sm font-medium text-slate-600 dark:text-slate-300'>No news available</p>
+              <p className='text-sm font-medium text-neutral-600 dark:text-neutral-300'>No news available</p>
             </div>
           </div>
         )}
@@ -53,11 +53,11 @@ export const NewsFeed = ({ symbol }: NewsFeedProps) => {
         <div ref={observerTarget} className='flex justify-center py-4'>
           {isLoading && (
             <div className='flex flex-col items-center gap-2'>
-              <Loader2 className='h-4 w-4 animate-spin text-slate-500' />
-              <p className='text-xs text-slate-500'>Loading more news...</p>
+              <Loader2 className='h-4 w-4 animate-spin text-neutral-500' />
+              <p className='text-xs text-neutral-500'>Loading more news...</p>
             </div>
           )}
-          {!hasMore && news.length > 0 && <p className='text-xs text-slate-500'>No more news to load</p>}
+          {!hasMore && news.length > 0 && <p className='text-xs text-neutral-500'>No more news to load</p>}
         </div>
       </div>
     </div>
