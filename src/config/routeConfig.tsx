@@ -3,6 +3,7 @@ import { OverviewPage } from '../pages/OverviewPage';
 import LoginPage from '@/pages/LoginPage';
 import SignupPage from '@/pages/SignupPage';
 import ProfilePage from '@/pages/ProfilePage';
+import UpgradePage from '@/pages/UpgradePage';
 import { PriceChartPage } from '@/pages/PriceChartPage';
 import AdminPage from '@/pages/AdminPage';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -51,6 +52,10 @@ export const routeConfig: RouteObject[] = [
           {
             path: 'profile',
             element: <ProfilePage />
+          },
+          {
+            path: 'upgrade',
+            element: <UpgradePage />
           }
         ]
       },
