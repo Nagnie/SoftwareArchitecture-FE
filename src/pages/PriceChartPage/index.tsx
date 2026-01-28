@@ -373,7 +373,7 @@ export const PriceChartPage = () => {
                               </div>
                               {/* Unlock CTA */}
                               <div className='absolute inset-0 flex items-center justify-center bg-white/10 backdrop-blur-[1px] dark:bg-black/10'>
-                                <Button>
+                                <Button onClick={() => navigate('/upgrade')}>
                                   <Lock className='h-4 w-4' />
                                   Unlock Full Reasoning
                                 </Button>
