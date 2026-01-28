@@ -119,7 +119,7 @@ export const SourcesManagement = ({ userId }: SourcesManagementProps) => {
           {userSources.length === 0 ? (
             <p className='text-muted-foreground text-center text-sm'>No sources subscribed yet</p>
           ) : (
-            <ScrollArea className='h-60'>
+            <ScrollArea className='max-h-60'>
               <div className='space-y-2'>
                 {userSources.map((source) => (
                   <div
@@ -197,7 +197,7 @@ export const SourcesManagement = ({ userId }: SourcesManagementProps) => {
           </div>
         </CardHeader>
         <CardContent>
-          <ScrollArea className='h-80'>
+          <ScrollArea className='max-h-80'>
             <div className='space-y-2'>
               {allSources.map((source) => {
                 const subscribed = isSubscribed(source._id);

@@ -29,6 +29,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } catch (error) {
           console.error('Failed to fetch user:', error);
           localStorage.removeItem('token');
+          localStorage.removeItem('userId');
         }
       }
       setIsLoading(false);
@@ -51,6 +52,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('userId');
     setUser(null);
   };
 

@@ -67,7 +67,7 @@ export const OverviewPage = () => {
     key: 'lastPrice',
     direction: 'desc'
   });
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
 
   useEffect(() => {
     const controller = new AbortController();
@@ -173,9 +173,9 @@ export const OverviewPage = () => {
     <>
       {/* Remove Header component */}
       <div className='flex flex-1 flex-col gap-6 px-6 py-6'>
-        <main className='mx-auto mt-8 flex max-w-7xl flex-col gap-8 px-4'>
+        <main className='mx-auto mt-6 flex max-w-7xl flex-col gap-8 px-4'>
           {/* Title And Filter */}
-          <div className='flex flex-col items-start justify-between gap-6 xl:flex-row xl:items-end'>
+          <div className='bg-background sticky top-0 z-10 flex w-230 flex-col items-start justify-between pb-6 xl:flex-row xl:items-end'>
             <div className='space-y-2'>
               <div className='flex items-center gap-3'>
                 <h1 className='text-3xl font-black tracking-tight'>Market Crypto</h1>
@@ -194,7 +194,7 @@ export const OverviewPage = () => {
                     setCurrentPage(1);
                   }}
                   className={`flex flex-1 items-center justify-center gap-2 rounded-xl px-5 py-2 text-xs font-black transition-all sm:flex-none ${
-                    filter === 'all' ? 'bg-slate-800 text-white shadow-xl' : 'text-slate-500 hover:text-slate-300'
+                    filter === 'all' ? 'bg-neutral-800 text-white shadow-xl' : 'text-neutral-500 hover:text-neutral-300'
                   }`}
                 >
                   All Assets
@@ -205,7 +205,9 @@ export const OverviewPage = () => {
                     setCurrentPage(1);
                   }}
                   className={`flex flex-1 items-center justify-center gap-2 rounded-xl px-5 py-2 text-xs font-black transition-all sm:flex-none ${
-                    filter === 'gainers' ? 'bg-emerald-500/10 text-emerald-500' : 'text-slate-500 hover:text-slate-300'
+                    filter === 'gainers'
+                      ? 'bg-emerald-500/10 text-emerald-500'
+                      : 'text-neutral-500 hover:text-neutral-300'
                   }`}
                 >
                   <TrendingUp className='h-3.5 w-3.5' /> Top Gainers
@@ -216,7 +218,7 @@ export const OverviewPage = () => {
                     setCurrentPage(1);
                   }}
                   className={`flex flex-1 items-center justify-center gap-2 rounded-xl px-5 py-2 text-xs font-black transition-all sm:flex-none ${
-                    filter === 'volume' ? 'bg-blue-500/10 text-blue-500' : 'text-slate-500 hover:text-slate-300'
+                    filter === 'volume' ? 'bg-blue-500/10 text-blue-500' : 'text-neutral-500 hover:text-neutral-300'
                   }`}
                 >
                   <Zap className='h-3.5 w-3.5' /> Top Volume
@@ -224,15 +226,14 @@ export const OverviewPage = () => {
               </div>
             </div>
           </div>
-          {/* Table */}
           <div>
             {/* Table */}
-            <div>
+            <div className='scrollbar-thin scrollbar-thumb-neutral-300 dark:scrollbar-thumb-neutral-700 scrollbar-track-transparent h-full max-h-150 overflow-auto overflow-y-auto'>
               <Table>
                 <TableHeader>
                   <TableRow className='hover:bg-transparent'>
                     <TableHead
-                      className='cursor-pointer text-[10px] font-black tracking-[0.2em] uppercase transition-colors select-none hover:text-slate-300'
+                      className='cursor-pointer text-[10px] font-black tracking-[0.2em] uppercase transition-colors select-none hover:text-neutral-300'
                       onClick={() => requestSort('symbol')}
                     >
                       <div className='flex items-center gap-2'>
@@ -240,7 +241,7 @@ export const OverviewPage = () => {
                       </div>
                     </TableHead>
                     <TableHead
-                      className='cursor-pointer text-[10px] font-black tracking-[0.2em] uppercase transition-colors select-none hover:text-slate-300'
+                      className='cursor-pointer text-[10px] font-black tracking-[0.2em] uppercase transition-colors select-none hover:text-neutral-300'
                       onClick={() => requestSort('lastPrice')}
                     >
                       <div className='flex items-center gap-2'>
@@ -248,7 +249,7 @@ export const OverviewPage = () => {
                       </div>
                     </TableHead>
                     <TableHead
-                      className='cursor-pointer text-[10px] font-black tracking-[0.2em] uppercase transition-colors select-none hover:text-slate-300'
+                      className='cursor-pointer text-[10px] font-black tracking-[0.2em] uppercase transition-colors select-none hover:text-neutral-300'
                       onClick={() => requestSort('priceChangePercent')}
                     >
                       <div className='flex items-center gap-2'>
@@ -256,7 +257,7 @@ export const OverviewPage = () => {
                       </div>
                     </TableHead>
                     <TableHead
-                      className='cursor-pointer text-[10px] font-black tracking-[0.2em] uppercase transition-colors select-none hover:text-slate-300'
+                      className='cursor-pointer text-[10px] font-black tracking-[0.2em] uppercase transition-colors select-none hover:text-neutral-300'
                       onClick={() => requestSort('quoteVolume')}
                     >
                       <div className='flex items-center gap-2'>
@@ -279,7 +280,7 @@ export const OverviewPage = () => {
                           <TableCell>
                             <div className='group flex items-center gap-4'>
                               <div className='relative'>
-                                <div className='flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl border border-slate-700/50 bg-slate-800 transition-all group-hover:border-blue-500/30'>
+                                <div className='flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl border border-neutral-700/50 bg-neutral-800 transition-all group-hover:border-blue-500/30'>
                                   <img
                                     src={getIconUrl(ticker.symbol)}
                                     alt={ticker.symbol}
@@ -317,10 +318,10 @@ export const OverviewPage = () => {
                           </TableCell>
                           <TableCell>
                             <div className='flex flex-col'>
-                              <span className='font-mono text-sm font-bold text-slate-400'>
+                              <span className='font-mono text-sm font-bold text-neutral-400'>
                                 {formatCompact(ticker.quoteVolume)}
                               </span>
-                              <div className='mt-1.5 h-1 w-24 overflow-hidden rounded-full bg-slate-800'>
+                              <div className='mt-1.5 h-1 w-24 overflow-hidden rounded-full bg-neutral-800'>
                                 <div
                                   className='h-full bg-blue-500/50'
                                   style={{

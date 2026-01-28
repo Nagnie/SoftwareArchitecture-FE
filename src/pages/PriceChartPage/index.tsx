@@ -8,9 +8,9 @@ import { NewsFeed } from '@/pages/PriceChartPage/components/NewsFeed';
 import { SourcesManagement } from '@/pages/PriceChartPage/components/SourcesManagement';
 import { get24hrTicker, getHistoryCandles, type Candle, type TickerData } from '@/services/market';
 import { websocketService } from '@/services/market/socket';
-import { ArrowUpRight, BrainCircuit, ChevronUp, Clock, Lock, Rss, FileStack } from 'lucide-react';
+import { ArrowUpRight, BrainCircuit, ChevronUp, Clock, Lock, Rss, FileStack, LogIn } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 
 const INTERVALS = [
   { label: '1m', value: '1m' },
@@ -23,6 +23,7 @@ const INTERVALS = [
 
 export const PriceChartPage = () => {
   const { tickerSymbol } = useParams();
+  const navigate = useNavigate();
   const symbol = tickerSymbol!;
 
   const [candles, setCandles] = useState<Candle[]>([]);
@@ -43,11 +44,15 @@ export const PriceChartPage = () => {
 
   // Get user ID from localStorage
   const [userId, setUserId] = useState<string>('');
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
   useEffect(() => {
     const storedUserId = localStorage.getItem('userId');
     if (storedUserId) {
       setUserId(storedUserId);
+      setIsAuthenticated(true);
+    } else {
+      setIsAuthenticated(false);
     }
   }, []);
 
@@ -202,12 +207,16 @@ export const PriceChartPage = () => {
     }
   };
 
+  const handleLogin = () => {
+    navigate('/login');
+  };
+
   return (
     <div className='flex h-full flex-col'>
       <Header priceDirection={priceDirection} ticker={ticker} />
 
-      <main className='flex-1 space-y-8 overflow-y-auto p-4 lg:px-12 lg:py-8'>
-        <div className='grid grid-cols-1 gap-8 lg:gap-12 lg:grid-cols-3'>
+      <main className='flex-1 space-y-8 overflow-y-auto p-4 lg:px-12 lg:py-6'>
+        <div className='grid grid-cols-1 gap-8 lg:grid-cols-3 lg:gap-12'>
           {/* Price Chart */}
           <div className='space-y-6 lg:col-span-2'>
             <div className='space-y-4'>
@@ -223,7 +232,7 @@ export const PriceChartPage = () => {
                       className={`rounded-lg px-4 py-1.5 text-[11px] font-black transition-all ${
                         interval === int.value
                           ? 'bg-blue-600 text-white dark:shadow-lg dark:shadow-blue-600/30'
-                          : 'hover:bg-slate-200 hover:text-slate-900 dark:hover:bg-slate-800/50 dark:hover:text-slate-300'
+                          : 'hover:bg-neutral-200 hover:text-neutral-900 dark:hover:bg-neutral-800/50 dark:hover:text-neutral-300'
                       }`}
                     >
                       {int.label}
@@ -232,10 +241,10 @@ export const PriceChartPage = () => {
                 </div>
               </div>
               {loading ? (
-                <div className='flex h-100 animate-pulse items-center justify-center rounded-2xl border border-slate-800/50 bg-slate-800/20'>
+                <div className='flex h-100 animate-pulse items-center justify-center rounded-2xl border border-neutral-800/50 bg-neutral-800/20'>
                   <div className='flex flex-col items-center gap-4'>
                     <div className='h-12 w-12 animate-spin rounded-full border-t-2 border-blue-500'></div>
-                    <p className='font-mono text-[10px] tracking-[0.3em] text-slate-500 uppercase'>
+                    <p className='font-mono text-[10px] tracking-[0.3em] text-neutral-500 uppercase'>
                       Syncing {symbol}...
                     </p>
                   </div>
@@ -261,137 +270,169 @@ export const PriceChartPage = () => {
               </TabsList>
 
               <TabsContent value='news' className='flex-1 overflow-hidden'>
-                <div
-                  ref={scrollContainerRef}
-                  className='scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-700 scrollbar-track-transparent flex h-full flex-col gap-6 overflow-x-hidden overflow-y-auto p-5 pt-0 pb-8 lg:pr-3'
-                >
-                  {/* AI Insights Section with smooth collapse */}
+                {!isAuthenticated ? (
+                  <div className='flex items-center justify-center'>
+                    <Card className='w-full'>
+                      <CardContent className='flex flex-col items-center gap-6 text-center'>
+                        <div>
+                          <h3 className='mb-2 text-xl font-bold'>Login Required</h3>
+                          <p className='text-muted-foreground text-sm'>Please login to see news and AI insights</p>
+                        </div>
+                        <Button onClick={handleLogin} size='lg'>
+                          <LogIn className='mr-2 h-4 w-4' />
+                          Login
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </div>
+                ) : (
                   <div
-                    ref={aiInsightsRef}
-                    className={`shrink-0 overflow-hidden transition-all duration-500 ease-in-out ${
-                      isAICollapsed
-                        ? 'lg:pointer-events-none lg:max-h-0 lg:scale-95 lg:opacity-0'
-                        : 'lg:max-h-500 lg:scale-100 lg:opacity-100'
-                    }`}
+                    ref={scrollContainerRef}
+                    className='scrollbar-thin scrollbar-thumb-neutral-300 dark:scrollbar-thumb-neutral-700 scrollbar-track-transparent flex h-full flex-col gap-6 overflow-x-hidden overflow-y-auto p-5 pt-0 pb-8 lg:pr-3'
                   >
-                    {/* Header */}
-                    <div className='mb-6 flex items-center justify-between'>
-                      <h2 className='flex items-center gap-2 text-lg font-bold'>
-                        <BrainCircuit />
-                        AI Insights
-                      </h2>
-                      <Button
-                        variant='ghost'
-                        size='sm'
-                        onClick={() => setShowAnalysis(!showAnalysis)}
-                        className='h-8 text-xs'
-                      >
-                        {showAnalysis ? 'Hide' : 'Show'} Analysis
-                      </Button>
-                    </div>
+                    {/* AI Insights Section with smooth collapse */}
+                    <div
+                      ref={aiInsightsRef}
+                      className={`shrink-0 overflow-hidden transition-all duration-500 ease-in-out ${
+                        isAICollapsed
+                          ? 'lg:pointer-events-none lg:max-h-0 lg:scale-95 lg:opacity-0'
+                          : 'lg:max-h-500 lg:scale-100 lg:opacity-100'
+                      }`}
+                    >
+                      {/* Header */}
+                      <div className='mb-6 flex items-center justify-between'>
+                        <h2 className='flex items-center gap-2 text-lg font-bold'>
+                          <BrainCircuit />
+                          AI Insights
+                        </h2>
+                        <Button
+                          variant='ghost'
+                          size='sm'
+                          onClick={() => setShowAnalysis(!showAnalysis)}
+                          className='h-8 text-xs'
+                        >
+                          {showAnalysis ? 'Hide' : 'Show'} Analysis
+                        </Button>
+                      </div>
 
-                    {/* Prediction Card */}
-                    <div className='mb-6'>
-                      <Card className='gap-0 py-4'>
-                        <CardHeader className='px-4'>
-                          <div className='flex items-start justify-between'>
-                            <div>
-                              <p className='text-muted-foreground mb-1 text-xs font-medium tracking-wider uppercase'>
-                                Trend Prediction
-                              </p>
-                              <h3 className='flex items-center gap-2 text-2xl font-bold text-[#26a69a]'>
-                                BULLISH
-                                <ArrowUpRight className='h-6 w-6 text-[#26a69a]' />
-                              </h3>
-                            </div>
-                            <div className='text-right'>
-                              <p className='text-muted-foreground mb-1 text-xs font-medium tracking-wider uppercase'>
-                                Confidence
-                              </p>
-                              <p className='text-xl font-bold text-white'>85%</p>
-                            </div>
-                          </div>
-                        </CardHeader>
-                        <CardContent className='px-4'>
-                          <div className='bg-accent rounded-lg p-3'>
-                            <div className='text-accent-foreground mb-1 flex justify-between text-xs'>
-                              <span>Fear</span>
-                              <span className='font-bold'>Greed (68)</span>
-                            </div>
-                            <div className='h-2 w-full overflow-hidden rounded-full bg-gray-700'>
-                              <div className='relative h-full w-[68%] rounded-full bg-linear-to-r from-red-500 via-yellow-500 to-green-500'>
-                                <div className='absolute top-0 right-0 bottom-0 w-1 bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)]'></div>
+                      {/* Prediction Card */}
+                      <div className='mb-6'>
+                        <Card className='gap-0 py-4'>
+                          <CardHeader className='px-4'>
+                            <div className='flex items-start justify-between'>
+                              <div>
+                                <p className='text-muted-foreground mb-1 text-xs font-medium tracking-wider uppercase'>
+                                  Trend Prediction
+                                </p>
+                                <h3 className='flex items-center gap-2 text-2xl font-bold text-[#26a69a]'>
+                                  BULLISH
+                                  <ArrowUpRight className='h-6 w-6 text-[#26a69a]' />
+                                </h3>
+                              </div>
+                              <div className='text-right'>
+                                <p className='text-muted-foreground mb-1 text-xs font-medium tracking-wider uppercase'>
+                                  Confidence
+                                </p>
+                                <p className='text-xl font-bold text-white'>85%</p>
                               </div>
                             </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </div>
-
-                    {/* The "Why" Section (Causal Analysis) */}
-                    {showAnalysis && (
-                      <div className='mb-6 flex flex-col gap-2'>
-                        <div className='flex items-center justify-between'>
-                          <h3 className='text-sm font-bold'>Causal Analysis</h3>
-                        </div>
-                        <Card className='py-4'>
-                          <CardContent className='relative px-4'>
-                            <p className='text-sm leading-relaxed text-gray-600 dark:text-gray-300'>
-                              On-chain data indicates significant whale accumulation in the $41.8k - $42.2k zone over
-                              the last 4 hours. Combined with the recent SEC clarity on ETF filings...
-                            </p>
-                            {/* VIP Blurring */}
-                            <div className='mt-2 text-sm leading-relaxed text-gray-600 opacity-50 blur-[3px] select-none dark:text-gray-300'>
-                              Furthermore, the RSI divergence on the 4H chart suggests a weakening of bearish momentum.
-                              Our NLP models parsed 15,000 tweets and found a 30% spike in positive sentiment keywords
-                              related to institutional adoption.
-                            </div>
-                            {/* Unlock CTA */}
-                            <div className='absolute inset-0 flex items-center justify-center bg-white/10 backdrop-blur-[1px] dark:bg-black/10'>
-                              <Button>
-                                <Lock className='h-4 w-4' />
-                                Unlock Full Reasoning
-                              </Button>
+                          </CardHeader>
+                          <CardContent className='px-4'>
+                            <div className='bg-accent rounded-lg p-3'>
+                              <div className='text-accent-foreground mb-1 flex justify-between text-xs'>
+                                <span>Fear</span>
+                                <span className='font-bold'>Greed (68)</span>
+                              </div>
+                              <div className='h-2 w-full overflow-hidden rounded-full bg-gray-700'>
+                                <div className='relative h-full w-[68%] rounded-full bg-linear-to-r from-red-500 via-yellow-500 to-green-500'>
+                                  <div className='absolute top-0 right-0 bottom-0 w-1 bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)]'></div>
+                                </div>
+                              </div>
                             </div>
                           </CardContent>
                         </Card>
                       </div>
+
+                      {/* The "Why" Section (Causal Analysis) */}
+                      {showAnalysis && (
+                        <div className='mb-6 flex flex-col gap-2'>
+                          <div className='flex items-center justify-between'>
+                            <h3 className='text-sm font-bold'>Causal Analysis</h3>
+                          </div>
+                          <Card className='py-4'>
+                            <CardContent className='relative px-4'>
+                              <p className='text-sm leading-relaxed text-gray-600 dark:text-gray-300'>
+                                On-chain data indicates significant whale accumulation in the $41.8k - $42.2k zone over
+                                the last 4 hours. Combined with the recent SEC clarity on ETF filings...
+                              </p>
+                              {/* VIP Blurring */}
+                              <div className='mt-2 text-sm leading-relaxed text-gray-600 opacity-50 blur-[3px] select-none dark:text-gray-300'>
+                                Furthermore, the RSI divergence on the 4H chart suggests a weakening of bearish
+                                momentum. Our NLP models parsed 15,000 tweets and found a 30% spike in positive
+                                sentiment keywords related to institutional adoption.
+                              </div>
+                              {/* Unlock CTA */}
+                              <div className='absolute inset-0 flex items-center justify-center bg-white/10 backdrop-blur-[1px] dark:bg-black/10'>
+                                <Button>
+                                  <Lock className='h-4 w-4' />
+                                  Unlock Full Reasoning
+                                </Button>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </div>
+                      )}
+
+                      <Separator />
+                    </div>
+
+                    {/* Collapse indicator - Sticky at top when collapsed */}
+                    {isAICollapsed && (
+                      <div
+                        className={`bg-background/80 sticky top-0 z-10 flex items-center justify-center rounded-lg px-5 py-3 backdrop-blur transition-all duration-300 ${
+                          isAICollapsed
+                            ? 'lg:translate-y-0 lg:opacity-100'
+                            : 'lg:pointer-events-none lg:-translate-y-full lg:opacity-0'
+                        }`}
+                      >
+                        <button
+                          onClick={scrollToTop}
+                          className='hover:bg-accent flex items-center gap-2 rounded-full px-4 py-2 text-xs font-medium transition-colors'
+                        >
+                          <ChevronUp className='h-4 w-4' />
+                          <span>Scroll up to see AI Insights</span>
+                          <ChevronUp className='h-4 w-4' />
+                        </button>
+                      </div>
                     )}
 
-                    <Separator />
-                  </div>
-
-                  {/* Collapse indicator - Sticky at top when collapsed */}
-                  {isAICollapsed && (
-                    <div
-                      className={`bg-background/80 sticky top-0 z-10 flex items-center justify-center rounded-lg px-5 py-3 backdrop-blur transition-all duration-300 ${
-                        isAICollapsed
-                          ? 'lg:translate-y-0 lg:opacity-100'
-                          : 'lg:pointer-events-none lg:-translate-y-full lg:opacity-0'
-                      }`}
-                    >
-                      <button
-                        onClick={scrollToTop}
-                        className='hover:bg-accent flex items-center gap-2 rounded-full px-4 py-2 text-xs font-medium transition-colors'
-                      >
-                        <ChevronUp className='h-4 w-4' />
-                        <span>Scroll up to see AI Insights</span>
-                        <ChevronUp className='h-4 w-4' />
-                      </button>
+                    {/* News Feed - Remove internal scroll, let parent handle it */}
+                    <div className='flex-1'>
+                      <NewsFeed symbol={symbol} />
                     </div>
-                  )}
-
-                  {/* News Feed - Remove internal scroll, let parent handle it */}
-                  <div className='flex-1'>
-                    <NewsFeed symbol={symbol} />
                   </div>
-                </div>
+                )}
               </TabsContent>
 
               <TabsContent value='sources' className='flex-1 overflow-hidden'>
-                <div className='scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-700 scrollbar-track-transparent h-full overflow-y-auto pt-0 pb-8'>
-                  <SourcesManagement userId={userId} />
-                </div>
+                {!isAuthenticated ? (
+                    <Card className='w-full'>
+                      <CardContent className='flex flex-col items-center gap-6 text-center'>
+                        <div>
+                          <h3 className='mb-2 text-xl font-bold'>Login Required</h3>
+                          <p className='text-muted-foreground text-sm'>Please login to view news source</p>
+                        </div>
+                        <Button onClick={handleLogin} size='lg'>
+                          <LogIn className='mr-2 h-4 w-4' />
+                          Login
+                        </Button>
+                      </CardContent>
+                    </Card>
+                ) : (
+                  <div className='scrollbar-thin scrollbar-thumb-neutral-300 dark:scrollbar-thumb-neutral-700 scrollbar-track-transparent h-full overflow-y-auto pt-0 pb-8'>
+                    <SourcesManagement userId={userId} />
+                  </div>
+                )}
               </TabsContent>
             </Tabs>
           </div>
