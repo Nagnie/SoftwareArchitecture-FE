@@ -7,9 +7,10 @@ import { Header } from '@/pages/PriceChartPage/components/Header';
 import { PriceChart } from '@/pages/PriceChartPage/components/PriceChart';
 import { NewsFeed } from '@/pages/PriceChartPage/components/NewsFeed';
 import { SourcesManagement } from '@/pages/PriceChartPage/components/SourcesManagement';
+import { getAIAnalysis, type AIAnalysisResponse } from '@/services/ai';
 import { get24hrTicker, getHistoryCandles, type Candle, type TickerData } from '@/services/market';
 import { websocketService } from '@/services/market/socket';
-import { ArrowUpRight, BrainCircuit, ChevronUp, Clock, Lock, Rss, FileStack, LogIn, Sparkles } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, BrainCircuit, ChevronUp, Clock, Lock, Rss, FileStack, LogIn, Sparkles, Loader2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
@@ -47,6 +48,11 @@ export const PriceChartPage = () => {
   const { user, isAuthenticated, isVip } = useAuth();
   const userId = user?.id?.toString() || '';
 
+  // AI Analysis state
+  const [aiAnalysis, setAiAnalysis] = useState<AIAnalysisResponse | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+
   // Effect to handle AI Insights auto-collapse on scroll
   useEffect(() => {
     const scrollContainer = scrollContainerRef.current;
@@ -70,6 +76,39 @@ export const PriceChartPage = () => {
       scrollContainer.removeEventListener('scroll', handleScroll);
     };
   }, [showAnalysis]); // Re-run khi showAnalysis thay đổi vì nó ảnh hưởng đến chiều cao
+
+  // Function to fetch AI Analysis - can be called for retry
+  const fetchAIAnalysis = async (signal?: AbortSignal) => {
+    if (!isVip || !symbol) return;
+
+    setAiLoading(true);
+    setAiError(null);
+
+    try {
+      const data = await getAIAnalysis({ symbol }, signal);
+      setAiAnalysis(data);
+    } catch (error) {
+      if (error instanceof Error && error.name !== 'AbortError') {
+        console.error('Failed to fetch AI analysis:', error);
+        setAiError('Failed to load AI insights');
+      }
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  // Effect to fetch AI Analysis for VIP users
+  useEffect(() => {
+    if (!isVip || !symbol) return;
+
+    const controller = new AbortController();
+    fetchAIAnalysis(controller.signal);
+
+    return () => {
+      controller.abort();
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isVip, symbol]);
 
   // Effect to handle price flashing
   useEffect(() => {
@@ -315,47 +354,95 @@ export const PriceChartPage = () => {
                       </div>
 
                       {/* Content wrapper - conditionally blurred for non-VIP */}
-                      <div className={!isVip ? 'pointer-events-none select-none blur-[4px]' : ''}>
+                      <div className={!isVip ? 'pointer-events-none select-none blur-xs' : ''}>
+                        {/* Loading State */}
+                        {isVip && aiLoading && (
+                          <div className='mb-6 flex items-center justify-center py-8'>
+                            <div className='flex flex-col items-center gap-3'>
+                              <Loader2 className='h-8 w-8 animate-spin text-blue-500' />
+                              <p className='text-muted-foreground text-sm'>Analyzing market data...</p>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Error State */}
+                        {isVip && aiError && !aiLoading && (
+                          <div className='mb-6'>
+                            <Card className='border-red-500/30 bg-red-500/10 py-4'>
+                              <CardContent className='px-4 text-center'>
+                                <p className='text-sm text-red-400'>{aiError}</p>
+                                <Button
+                                  variant='ghost'
+                                  size='sm'
+                                  className='mt-2 text-xs'
+                                  onClick={() => fetchAIAnalysis()}
+                                >
+                                  Try Again
+                                </Button>
+                              </CardContent>
+                            </Card>
+                          </div>
+                        )}
+
                         {/* Prediction Card */}
-                        <div className='mb-6'>
-                          <Card className='gap-0 py-4'>
-                            <CardHeader className='px-4'>
-                              <div className='flex items-start justify-between'>
-                                <div>
-                                  <p className='text-muted-foreground mb-1 text-xs font-medium tracking-wider uppercase'>
-                                    Trend Prediction
-                                  </p>
-                                  <h3 className='flex items-center gap-2 text-2xl font-bold text-[#26a69a]'>
-                                    BULLISH
-                                    <ArrowUpRight className='h-6 w-6 text-[#26a69a]' />
-                                  </h3>
-                                </div>
-                                <div className='text-right'>
-                                  <p className='text-muted-foreground mb-1 text-xs font-medium tracking-wider uppercase'>
-                                    Confidence
-                                  </p>
-                                  <p className='text-xl font-bold text-white'>85%</p>
-                                </div>
-                              </div>
-                            </CardHeader>
-                            <CardContent className='px-4'>
-                              <div className='bg-accent rounded-lg p-3'>
-                                <div className='text-accent-foreground mb-1 flex justify-between text-xs'>
-                                  <span>Fear</span>
-                                  <span className='font-bold'>Greed (68)</span>
-                                </div>
-                                <div className='h-2 w-full overflow-hidden rounded-full bg-gray-700'>
-                                  <div className='relative h-full w-[68%] rounded-full bg-linear-to-r from-red-500 via-yellow-500 to-green-500'>
-                                    <div className='absolute top-0 right-0 bottom-0 w-1 bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)]'></div>
+                        {(!isVip || (isVip && aiAnalysis && !aiLoading)) && (
+                          <div className='mb-6'>
+                            <Card className='gap-0 py-4'>
+                              <CardHeader className='px-4'>
+                                <div className='flex items-start justify-between'>
+                                  <div>
+                                    <p className='text-muted-foreground mb-1 text-xs font-medium tracking-wider uppercase'>
+                                      Trend Prediction
+                                    </p>
+                                    <h3
+                                      className={`flex items-center gap-2 text-2xl font-bold ${
+                                        (aiAnalysis?.trend.direction || 'BULLISH').toUpperCase() === 'BULLISH'
+                                          ? 'text-[#26a69a]'
+                                          : 'text-[#ef5350]'
+                                      }`}
+                                    >
+                                      {(aiAnalysis?.trend.direction || 'BULLISH').toUpperCase()}
+                                      {(aiAnalysis?.trend.direction || 'BULLISH').toUpperCase() === 'BULLISH' ? (
+                                        <ArrowUpRight className='h-6 w-6 text-[#26a69a]' />
+                                      ) : (
+                                        <ArrowDownRight className='h-6 w-6 text-[#ef5350]' />
+                                      )}
+                                    </h3>
+                                  </div>
+                                  <div className='text-right'>
+                                    <p className='text-muted-foreground mb-1 text-xs font-medium tracking-wider uppercase'>
+                                      Confidence
+                                    </p>
+                                    <p className='text-xl font-bold text-white'>
+                                      {aiAnalysis?.trend.confidence ?? 85}%
+                                    </p>
                                   </div>
                                 </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        </div>
+                              </CardHeader>
+                              <CardContent className='px-4'>
+                                <div className='bg-accent rounded-lg p-3'>
+                                  <div className='text-accent-foreground mb-1 flex justify-between text-xs'>
+                                    <span>Fear</span>
+                                    <span className='font-bold'>
+                                      {aiAnalysis?.fear_greed.label ?? 'Greed'} ({aiAnalysis?.fear_greed.score ?? 68})
+                                    </span>
+                                  </div>
+                                  <div className='h-2 w-full overflow-hidden rounded-full bg-gray-700'>
+                                    <div
+                                      className='relative h-full rounded-full bg-linear-to-r from-red-500 via-yellow-500 to-green-500'
+                                      style={{ width: `${aiAnalysis?.fear_greed.score ?? 68}%` }}
+                                    >
+                                      <div className='absolute top-0 right-0 bottom-0 w-1 bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)]'></div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          </div>
+                        )}
 
                         {/* The "Why" Section (Causal Analysis) - Only visible for VIP */}
-                        {isVip && showAnalysis && (
+                        {isVip && showAnalysis && aiAnalysis && !aiLoading && (
                           <div className='mb-6 flex flex-col gap-2'>
                             <div className='flex items-center justify-between'>
                               <h3 className='text-sm font-bold'>Causal Analysis</h3>
@@ -363,14 +450,8 @@ export const PriceChartPage = () => {
                             <Card className='py-4'>
                               <CardContent className='px-4'>
                                 <p className='text-sm leading-relaxed text-gray-600 dark:text-gray-300'>
-                                  On-chain data indicates significant whale accumulation in the $41.8k - $42.2k zone over
-                                  the last 4 hours. Combined with the recent SEC clarity on ETF filings...
+                                  {aiAnalysis.causal_analysis}
                                 </p>
-                                <div className='mt-2 text-sm leading-relaxed text-gray-600 dark:text-gray-300'>
-                                  Furthermore, the RSI divergence on the 4H chart suggests a weakening of bearish
-                                  momentum. Our NLP models parsed 15,000 tweets and found a 30% spike in positive
-                                  sentiment keywords related to institutional adoption.
-                                </div>
                               </CardContent>
                             </Card>
                           </div>
