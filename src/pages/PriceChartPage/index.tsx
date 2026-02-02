@@ -354,7 +354,20 @@ export const PriceChartPage = () => {
                       </div>
 
                       {/* Content wrapper - conditionally blurred for non-VIP */}
-                      <div className={!isVip ? 'pointer-events-none select-none blur-xs' : ''}>
+                      <div className={`relative ${!isVip ? 'pointer-events-none select-none blur-xs' : ''}`}>
+                        {/* Sample Data Watermark - visible if user removes blur via DevTools */}
+                        {!isVip && (
+                          <div className='pointer-events-none absolute inset-0 z-10 flex items-center justify-center'>
+                            <div className='rotate-[-15deg] text-center'>
+                              <p className='text-4xl font-black tracking-widest text-red-500/30 uppercase'>
+                                SAMPLE DATA
+                              </p>
+                              <p className='text-sm font-medium text-red-500/20'>
+                                Not real predictions - Upgrade to VIP for actual AI insights
+                              </p>
+                            </div>
+                          </div>
+                        )}
                         {/* Loading State */}
                         {isVip && aiLoading && (
                           <div className='mb-6 flex items-center justify-center py-8'>
