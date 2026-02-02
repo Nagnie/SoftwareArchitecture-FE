@@ -2,13 +2,14 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useAuth } from '@/context/AuthContext';
 import { Header } from '@/pages/PriceChartPage/components/Header';
 import { PriceChart } from '@/pages/PriceChartPage/components/PriceChart';
 import { NewsFeed } from '@/pages/PriceChartPage/components/NewsFeed';
 import { SourcesManagement } from '@/pages/PriceChartPage/components/SourcesManagement';
 import { get24hrTicker, getHistoryCandles, type Candle, type TickerData } from '@/services/market';
 import { websocketService } from '@/services/market/socket';
-import { ArrowUpRight, BrainCircuit, ChevronUp, Clock, Lock, Rss, FileStack, LogIn } from 'lucide-react';
+import { ArrowUpRight, BrainCircuit, ChevronUp, Clock, Lock, Rss, FileStack, LogIn, Sparkles } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
@@ -42,19 +43,9 @@ export const PriceChartPage = () => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const aiInsightsRef = useRef<HTMLDivElement>(null);
 
-  // Get user ID from localStorage
-  const [userId, setUserId] = useState<string>('');
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-
-  useEffect(() => {
-    const storedUserId = localStorage.getItem('userId');
-    if (storedUserId) {
-      setUserId(storedUserId);
-      setIsAuthenticated(true);
-    } else {
-      setIsAuthenticated(false);
-    }
-  }, []);
+  // Get authentication state from AuthContext
+  const { user, isAuthenticated, isVip } = useAuth();
+  const userId = user?.id?.toString() || '';
 
   // Effect to handle AI Insights auto-collapse on scroll
   useEffect(() => {
@@ -293,7 +284,7 @@ export const PriceChartPage = () => {
                     {/* AI Insights Section with smooth collapse */}
                     <div
                       ref={aiInsightsRef}
-                      className={`shrink-0 overflow-hidden transition-all duration-500 ease-in-out ${
+                      className={`relative shrink-0 overflow-hidden transition-all duration-500 ease-in-out ${
                         isAICollapsed
                           ? 'lg:pointer-events-none lg:max-h-0 lg:scale-95 lg:opacity-0'
                           : 'lg:max-h-500 lg:scale-100 lg:opacity-100'
@@ -304,86 +295,113 @@ export const PriceChartPage = () => {
                         <h2 className='flex items-center gap-2 text-lg font-bold'>
                           <BrainCircuit />
                           AI Insights
+                          {isVip && (
+                            <span className='inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-500 to-yellow-400 px-2 py-0.5 text-[10px] font-bold text-black'>
+                              <Sparkles className='h-3 w-3' />
+                              VIP
+                            </span>
+                          )}
                         </h2>
-                        <Button
-                          variant='ghost'
-                          size='sm'
-                          onClick={() => setShowAnalysis(!showAnalysis)}
-                          className='h-8 text-xs'
-                        >
-                          {showAnalysis ? 'Hide' : 'Show'} Analysis
-                        </Button>
+                        {isVip && (
+                          <Button
+                            variant='ghost'
+                            size='sm'
+                            onClick={() => setShowAnalysis(!showAnalysis)}
+                            className='h-8 text-xs'
+                          >
+                            {showAnalysis ? 'Hide' : 'Show'} Analysis
+                          </Button>
+                        )}
                       </div>
 
-                      {/* Prediction Card */}
-                      <div className='mb-6'>
-                        <Card className='gap-0 py-4'>
-                          <CardHeader className='px-4'>
-                            <div className='flex items-start justify-between'>
-                              <div>
-                                <p className='text-muted-foreground mb-1 text-xs font-medium tracking-wider uppercase'>
-                                  Trend Prediction
-                                </p>
-                                <h3 className='flex items-center gap-2 text-2xl font-bold text-[#26a69a]'>
-                                  BULLISH
-                                  <ArrowUpRight className='h-6 w-6 text-[#26a69a]' />
-                                </h3>
-                              </div>
-                              <div className='text-right'>
-                                <p className='text-muted-foreground mb-1 text-xs font-medium tracking-wider uppercase'>
-                                  Confidence
-                                </p>
-                                <p className='text-xl font-bold text-white'>85%</p>
-                              </div>
-                            </div>
-                          </CardHeader>
-                          <CardContent className='px-4'>
-                            <div className='bg-accent rounded-lg p-3'>
-                              <div className='text-accent-foreground mb-1 flex justify-between text-xs'>
-                                <span>Fear</span>
-                                <span className='font-bold'>Greed (68)</span>
-                              </div>
-                              <div className='h-2 w-full overflow-hidden rounded-full bg-gray-700'>
-                                <div className='relative h-full w-[68%] rounded-full bg-linear-to-r from-red-500 via-yellow-500 to-green-500'>
-                                  <div className='absolute top-0 right-0 bottom-0 w-1 bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)]'></div>
+                      {/* Content wrapper - conditionally blurred for non-VIP */}
+                      <div className={!isVip ? 'pointer-events-none select-none blur-[4px]' : ''}>
+                        {/* Prediction Card */}
+                        <div className='mb-6'>
+                          <Card className='gap-0 py-4'>
+                            <CardHeader className='px-4'>
+                              <div className='flex items-start justify-between'>
+                                <div>
+                                  <p className='text-muted-foreground mb-1 text-xs font-medium tracking-wider uppercase'>
+                                    Trend Prediction
+                                  </p>
+                                  <h3 className='flex items-center gap-2 text-2xl font-bold text-[#26a69a]'>
+                                    BULLISH
+                                    <ArrowUpRight className='h-6 w-6 text-[#26a69a]' />
+                                  </h3>
+                                </div>
+                                <div className='text-right'>
+                                  <p className='text-muted-foreground mb-1 text-xs font-medium tracking-wider uppercase'>
+                                    Confidence
+                                  </p>
+                                  <p className='text-xl font-bold text-white'>85%</p>
                                 </div>
                               </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </div>
-
-                      {/* The "Why" Section (Causal Analysis) */}
-                      {showAnalysis && (
-                        <div className='mb-6 flex flex-col gap-2'>
-                          <div className='flex items-center justify-between'>
-                            <h3 className='text-sm font-bold'>Causal Analysis</h3>
-                          </div>
-                          <Card className='py-4'>
-                            <CardContent className='relative px-4'>
-                              <p className='text-sm leading-relaxed text-gray-600 dark:text-gray-300'>
-                                On-chain data indicates significant whale accumulation in the $41.8k - $42.2k zone over
-                                the last 4 hours. Combined with the recent SEC clarity on ETF filings...
-                              </p>
-                              {/* VIP Blurring */}
-                              <div className='mt-2 text-sm leading-relaxed text-gray-600 opacity-50 blur-[3px] select-none dark:text-gray-300'>
-                                Furthermore, the RSI divergence on the 4H chart suggests a weakening of bearish
-                                momentum. Our NLP models parsed 15,000 tweets and found a 30% spike in positive
-                                sentiment keywords related to institutional adoption.
-                              </div>
-                              {/* Unlock CTA */}
-                              <div className='absolute inset-0 flex items-center justify-center bg-white/10 backdrop-blur-[1px] dark:bg-black/10'>
-                                <Button onClick={() => navigate('/upgrade')}>
-                                  <Lock className='h-4 w-4' />
-                                  Unlock Full Reasoning
-                                </Button>
+                            </CardHeader>
+                            <CardContent className='px-4'>
+                              <div className='bg-accent rounded-lg p-3'>
+                                <div className='text-accent-foreground mb-1 flex justify-between text-xs'>
+                                  <span>Fear</span>
+                                  <span className='font-bold'>Greed (68)</span>
+                                </div>
+                                <div className='h-2 w-full overflow-hidden rounded-full bg-gray-700'>
+                                  <div className='relative h-full w-[68%] rounded-full bg-linear-to-r from-red-500 via-yellow-500 to-green-500'>
+                                    <div className='absolute top-0 right-0 bottom-0 w-1 bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)]'></div>
+                                  </div>
+                                </div>
                               </div>
                             </CardContent>
                           </Card>
                         </div>
+
+                        {/* The "Why" Section (Causal Analysis) - Only visible for VIP */}
+                        {isVip && showAnalysis && (
+                          <div className='mb-6 flex flex-col gap-2'>
+                            <div className='flex items-center justify-between'>
+                              <h3 className='text-sm font-bold'>Causal Analysis</h3>
+                            </div>
+                            <Card className='py-4'>
+                              <CardContent className='px-4'>
+                                <p className='text-sm leading-relaxed text-gray-600 dark:text-gray-300'>
+                                  On-chain data indicates significant whale accumulation in the $41.8k - $42.2k zone over
+                                  the last 4 hours. Combined with the recent SEC clarity on ETF filings...
+                                </p>
+                                <div className='mt-2 text-sm leading-relaxed text-gray-600 dark:text-gray-300'>
+                                  Furthermore, the RSI divergence on the 4H chart suggests a weakening of bearish
+                                  momentum. Our NLP models parsed 15,000 tweets and found a 30% spike in positive
+                                  sentiment keywords related to institutional adoption.
+                                </div>
+                              </CardContent>
+                            </Card>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Unlock CTA Overlay - Only visible for non-VIP */}
+                      {!isVip && (
+                        <div className='absolute inset-0 flex items-center justify-center bg-white/20 backdrop-blur-[2px] dark:bg-black/20'>
+                          <div className='flex flex-col items-center gap-4 text-center'>
+                            <div className='rounded-full bg-gradient-to-r from-amber-500/20 to-yellow-400/20 p-4'>
+                              <Lock className='h-8 w-8 text-amber-500' />
+                            </div>
+                            <div>
+                              <h3 className='mb-1 text-lg font-bold'>Unlock AI Insights</h3>
+                              <p className='text-muted-foreground mb-4 text-sm'>
+                                Upgrade to VIP to access advanced AI predictions and analysis
+                              </p>
+                            </div>
+                            <Button
+                              onClick={() => navigate('/upgrade')}
+                              className='bg-gradient-to-r from-amber-500 to-yellow-400 text-black hover:from-amber-600 hover:to-yellow-500'
+                            >
+                              <Sparkles className='h-4 w-4' />
+                              Upgrade to VIP
+                            </Button>
+                          </div>
+                        </div>
                       )}
 
-                      <Separator />
+                      <Separator className={!isVip ? 'mt-4' : ''} />
                     </div>
 
                     {/* Collapse indicator - Sticky at top when collapsed */}

@@ -10,6 +10,7 @@ interface AuthContextType {
   register: (data: RegisterRequest) => Promise<void>;
   logout: () => void;
   isAdmin: boolean;
+  isVip: boolean;
   refreshUser: () => Promise<void>;
 }
 
@@ -57,6 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const isAdmin = user?.role === 'ROLE_ADMIN' || false;
+  const isVip = user?.accountType === 'VIP' || false;
 
   const refreshUser = async () => {
     try {
@@ -69,7 +71,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, isAuthenticated: !!user, isLoading, login, register, logout, isAdmin, refreshUser }}
+      value={{ user, isAuthenticated: !!user, isLoading, login, register, logout, isAdmin, isVip, refreshUser }}
     >
       {children}
     </AuthContext.Provider>
