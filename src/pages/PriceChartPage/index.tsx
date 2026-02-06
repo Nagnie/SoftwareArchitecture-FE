@@ -7,11 +7,37 @@ import { Header } from '@/pages/PriceChartPage/components/Header';
 import { PriceChart } from '@/pages/PriceChartPage/components/PriceChart';
 import { NewsFeed } from '@/pages/PriceChartPage/components/NewsFeed';
 import { SourcesManagement } from '@/pages/PriceChartPage/components/SourcesManagement';
+import { IndicatorControls } from '@/pages/PriceChartPage/components/IndicatorControls';
 import { getAIAnalysis, type AIAnalysisResponse } from '@/services/ai';
 import { get24hrTicker, getHistoryCandles, type Candle, type TickerData } from '@/services/market';
 import { websocketService } from '@/services/market/socket';
+import {
+  getMA,
+  getEMA,
+  getBollinger,
+  getRSI,
+  getMACD,
+  getStochastic,
+  getATR,
+  type IndicatorValue,
+  type BollingerValue,
+  type MACDValue,
+  type StochasticValue,
+  type EnabledIndicators,
+  type IndicatorSettings
+} from '@/services/indicators';
+import { getNews, type New } from '@/services/news';
+import {
+  calculateSMA,
+  calculateEMA,
+  calculateRSI,
+  calculateMACD,
+  calculateBollinger,
+  calculateStochastic,
+  calculateATR
+} from '@/utils/indicatorCalculations';
 import { ArrowUpRight, ArrowDownRight, BrainCircuit, ChevronUp, Clock, Lock, Rss, FileStack, LogIn, Sparkles, Loader2 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
 const INTERVALS = [
@@ -22,6 +48,27 @@ const INTERVALS = [
   { label: '4h', value: '4h' },
   { label: '1d', value: '1d' }
 ];
+
+// Default indicator settings
+const DEFAULT_INDICATOR_SETTINGS: IndicatorSettings = {
+  ma: { period: 20, color: '#2196F3' },
+  ema: { period: 12, color: '#FF9800' },
+  rsi: { period: 14 },
+  macd: { fastPeriod: 12, slowPeriod: 26, signalPeriod: 9 },
+  bollinger: { period: 20, stdDev: 2 },
+  stochastic: { kPeriod: 14, dPeriod: 3 },
+  atr: { period: 14 }
+};
+
+const DEFAULT_ENABLED_INDICATORS: EnabledIndicators = {
+  ma: false,
+  ema: false,
+  rsi: false,
+  macd: false,
+  bollinger: false,
+  stochastic: false,
+  atr: false
+};
 
 export const PriceChartPage = () => {
   const { tickerSymbol } = useParams();
@@ -52,6 +99,249 @@ export const PriceChartPage = () => {
   const [aiAnalysis, setAiAnalysis] = useState<AIAnalysisResponse | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
+
+  // Technical Indicators state
+  const [enabledIndicators, setEnabledIndicators] = useState<EnabledIndicators>(DEFAULT_ENABLED_INDICATORS);
+  const [indicatorSettings, setIndicatorSettings] = useState<IndicatorSettings>(DEFAULT_INDICATOR_SETTINGS);
+  const [maData, setMaData] = useState<IndicatorValue[]>([]);
+  const [emaData, setEmaData] = useState<IndicatorValue[]>([]);
+  const [bollingerData, setBollingerData] = useState<BollingerValue[]>([]);
+  const [rsiData, setRsiData] = useState<IndicatorValue[]>([]);
+  const [macdData, setMacdData] = useState<MACDValue[]>([]);
+  const [stochasticData, setStochasticData] = useState<StochasticValue[]>([]);
+  const [atrData, setAtrData] = useState<IndicatorValue[]>([]);
+  const [indicatorsLoading, setIndicatorsLoading] = useState(false);
+
+  // News events for chart markers
+  const [newsEvents, setNewsEvents] = useState<New[]>([]);
+
+  // Toggle indicator handler
+  const handleToggleIndicator = useCallback((indicator: keyof EnabledIndicators) => {
+    setEnabledIndicators((prev) => ({
+      ...prev,
+      [indicator]: !prev[indicator]
+    }));
+  }, []);
+
+  // Settings change handler
+  const handleSettingsChange = useCallback((newSettings: IndicatorSettings) => {
+    setIndicatorSettings(newSettings);
+  }, []);
+
+  // Fetch indicators when enabled or settings change
+  useEffect(() => {
+    const fetchIndicators = async () => {
+      if (!symbol || !interval) return;
+
+      const hasAnyEnabled = Object.values(enabledIndicators).some(Boolean);
+      if (!hasAnyEnabled) {
+        setMaData([]);
+        setEmaData([]);
+        setBollingerData([]);
+        setRsiData([]);
+        setMacdData([]);
+        setStochasticData([]);
+        setAtrData([]);
+        return;
+      }
+
+      setIndicatorsLoading(true);
+
+      try {
+        const promises: Promise<void>[] = [];
+
+        // Overlay Indicators
+        if (enabledIndicators.ma) {
+          promises.push(
+            getMA({ symbol, interval, period: indicatorSettings.ma.period }).then((res) => {
+              setMaData(res.values);
+            })
+          );
+        } else {
+          setMaData([]);
+        }
+
+        if (enabledIndicators.ema) {
+          promises.push(
+            getEMA({ symbol, interval, period: indicatorSettings.ema.period }).then((res) => {
+              setEmaData(res.values);
+            })
+          );
+        } else {
+          setEmaData([]);
+        }
+
+        if (enabledIndicators.bollinger) {
+          promises.push(
+            getBollinger({
+              symbol,
+              interval,
+              period: indicatorSettings.bollinger.period,
+              stdDev: indicatorSettings.bollinger.stdDev
+            }).then((res) => {
+              setBollingerData(res.values);
+            })
+          );
+        } else {
+          setBollingerData([]);
+        }
+
+        // Oscillator Indicators
+        if (enabledIndicators.rsi) {
+          promises.push(
+            getRSI({ symbol, interval, period: indicatorSettings.rsi.period }).then((res) => {
+              setRsiData(res.values);
+            })
+          );
+        } else {
+          setRsiData([]);
+        }
+
+        if (enabledIndicators.macd) {
+          promises.push(
+            getMACD({
+              symbol,
+              interval,
+              fastPeriod: indicatorSettings.macd.fastPeriod,
+              slowPeriod: indicatorSettings.macd.slowPeriod,
+              signalPeriod: indicatorSettings.macd.signalPeriod
+            }).then((res) => {
+              setMacdData(res.values);
+            })
+          );
+        } else {
+          setMacdData([]);
+        }
+
+        if (enabledIndicators.stochastic) {
+          promises.push(
+            getStochastic({
+              symbol,
+              interval,
+              kPeriod: indicatorSettings.stochastic.kPeriod,
+              dPeriod: indicatorSettings.stochastic.dPeriod
+            }).then((res) => {
+              setStochasticData(res.values);
+            })
+          );
+        } else {
+          setStochasticData([]);
+        }
+
+        if (enabledIndicators.atr) {
+          promises.push(
+            getATR({ symbol, interval, period: indicatorSettings.atr.period }).then((res) => {
+              setAtrData(res.values);
+            })
+          );
+        } else {
+          setAtrData([]);
+        }
+
+        await Promise.all(promises);
+      } catch (error) {
+        console.error('Failed to fetch indicators:', error);
+      } finally {
+        setIndicatorsLoading(false);
+      }
+    };
+
+    fetchIndicators();
+  }, [
+    symbol,
+    interval,
+    // Dependencies are the stringified versions to avoid infinite loops
+    // Real-time updates are handled separately via useMemo calculations
+    enabledIndicators,
+    indicatorSettings
+  ]);
+
+  // Real-time indicator calculations when candles update
+  // This runs every time candles change (from WebSocket updates)
+  const calculatedIndicators = useMemo(() => {
+    if (candles.length === 0) return null;
+
+    const result: {
+      ma: IndicatorValue[];
+      ema: IndicatorValue[];
+      bollinger: BollingerValue[];
+      rsi: IndicatorValue[];
+      macd: MACDValue[];
+      stochastic: StochasticValue[];
+      atr: IndicatorValue[];
+    } = {
+      ma: [],
+      ema: [],
+      bollinger: [],
+      rsi: [],
+      macd: [],
+      stochastic: [],
+      atr: []
+    };
+
+    // Only calculate enabled indicators
+    if (enabledIndicators.ma) {
+      result.ma = calculateSMA(candles, indicatorSettings.ma.period);
+    }
+    if (enabledIndicators.ema) {
+      result.ema = calculateEMA(candles, indicatorSettings.ema.period);
+    }
+    if (enabledIndicators.bollinger) {
+      result.bollinger = calculateBollinger(
+        candles,
+        indicatorSettings.bollinger.period,
+        indicatorSettings.bollinger.stdDev
+      );
+    }
+    if (enabledIndicators.rsi) {
+      result.rsi = calculateRSI(candles, indicatorSettings.rsi.period);
+    }
+    if (enabledIndicators.macd) {
+      result.macd = calculateMACD(
+        candles,
+        indicatorSettings.macd.fastPeriod,
+        indicatorSettings.macd.slowPeriod,
+        indicatorSettings.macd.signalPeriod
+      );
+    }
+    if (enabledIndicators.stochastic) {
+      result.stochastic = calculateStochastic(
+        candles,
+        indicatorSettings.stochastic.kPeriod,
+        indicatorSettings.stochastic.dPeriod
+      );
+    }
+    if (enabledIndicators.atr) {
+      result.atr = calculateATR(candles, indicatorSettings.atr.period);
+    }
+
+    return result;
+  }, [candles, enabledIndicators, indicatorSettings]);
+
+  // Use calculated indicators (real-time) or fallback to fetched data (initial load)
+  const effectiveMaData = calculatedIndicators?.ma.length ? calculatedIndicators.ma : maData;
+  const effectiveEmaData = calculatedIndicators?.ema.length ? calculatedIndicators.ema : emaData;
+  const effectiveBollingerData = calculatedIndicators?.bollinger.length ? calculatedIndicators.bollinger : bollingerData;
+  const effectiveRsiData = calculatedIndicators?.rsi.length ? calculatedIndicators.rsi : rsiData;
+  const effectiveMacdData = calculatedIndicators?.macd.length ? calculatedIndicators.macd : macdData;
+  const effectiveStochasticData = calculatedIndicators?.stochastic.length ? calculatedIndicators.stochastic : stochasticData;
+  const effectiveAtrData = calculatedIndicators?.atr.length ? calculatedIndicators.atr : atrData;
+
+  // Fetch news events for chart markers
+  useEffect(() => {
+    const fetchNewsForMarkers = async () => {
+      if (!isAuthenticated) return;
+
+      try {
+        const response = await getNews({ page: 1, page_size: 20 });
+        setNewsEvents(response.data);
+      } catch (error) {
+        console.error('Failed to fetch news for markers:', error);
+      }
+    };
+
+    fetchNewsForMarkers();
+  }, [isAuthenticated]);
 
   // Effect to handle AI Insights auto-collapse on scroll
   useEffect(() => {
@@ -254,20 +544,32 @@ export const PriceChartPage = () => {
                 <h2 className='flex items-center gap-2 text-xs font-bold tracking-widest uppercase'>
                   <Clock className='h-3 w-3' /> Chart Performance • {interval.toUpperCase()}
                 </h2>
-                <div className='bg-card flex rounded-xl border p-1 backdrop-blur-sm'>
-                  {INTERVALS.map((int) => (
-                    <button
-                      key={int.value}
-                      onClick={() => setIntervalTime(int.value)}
-                      className={`rounded-lg px-4 py-1.5 text-[11px] font-black transition-all ${
-                        interval === int.value
-                          ? 'bg-blue-600 text-white dark:shadow-lg dark:shadow-blue-600/30'
-                          : 'hover:bg-neutral-200 hover:text-neutral-900 dark:hover:bg-neutral-800/50 dark:hover:text-neutral-300'
-                      }`}
-                    >
-                      {int.label}
-                    </button>
-                  ))}
+                <div className='flex items-center gap-3'>
+                  {/* Indicator Controls */}
+                  <IndicatorControls
+                    enabledIndicators={enabledIndicators}
+                    settings={indicatorSettings}
+                    onToggleIndicator={handleToggleIndicator}
+                    onSettingsChange={handleSettingsChange}
+                    isLoading={indicatorsLoading}
+                  />
+                  
+                  {/* Interval Selector */}
+                  <div className='bg-card flex rounded-xl border p-1 backdrop-blur-sm'>
+                    {INTERVALS.map((int) => (
+                      <button
+                        key={int.value}
+                        onClick={() => setIntervalTime(int.value)}
+                        className={`rounded-lg px-4 py-1.5 text-[11px] font-black transition-all ${
+                          interval === int.value
+                            ? 'bg-blue-600 text-white dark:shadow-lg dark:shadow-blue-600/30'
+                            : 'hover:bg-neutral-200 hover:text-neutral-900 dark:hover:bg-neutral-800/50 dark:hover:text-neutral-300'
+                        }`}
+                      >
+                        {int.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
               {loading ? (
@@ -280,7 +582,31 @@ export const PriceChartPage = () => {
                   </div>
                 </div>
               ) : (
-                <PriceChart data={candles} symbol={symbol} interval={interval} />
+                <PriceChart
+                  data={candles}
+                  symbol={symbol}
+                  interval={interval}
+                  // Overlay Indicators (real-time calculated)
+                  maData={effectiveMaData}
+                  emaData={effectiveEmaData}
+                  bollingerData={effectiveBollingerData}
+                  showMA={enabledIndicators.ma}
+                  showEMA={enabledIndicators.ema}
+                  showBollinger={enabledIndicators.bollinger}
+                  maColor={indicatorSettings.ma.color}
+                  emaColor={indicatorSettings.ema.color}
+                  // Oscillator Indicators (real-time calculated)
+                  rsiData={effectiveRsiData}
+                  macdData={effectiveMacdData}
+                  stochData={effectiveStochasticData}
+                  atrData={effectiveAtrData}
+                  showRSI={enabledIndicators.rsi}
+                  showMACD={enabledIndicators.macd}
+                  showStochastic={enabledIndicators.stochastic}
+                  showATR={enabledIndicators.atr}
+                  // News events for markers
+                  newsEvents={isAuthenticated ? newsEvents : []}
+                />
               )}
             </div>
           </div>
